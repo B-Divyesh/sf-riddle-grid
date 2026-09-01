@@ -4,7 +4,7 @@ Checked 2026-09-01. Word counts treat contractions and hyphenated terms as one w
 
 | Copy | Words | Result |
 | --- | ---: | --- |
-| Today’s five-minute field puzzle | 4 | Pass |
+| Today’s short field puzzle | 4 | Pass |
 | Solve one short deduction grid | 5 | Pass |
 | For coffee-break players who want logic without spelling tests. | 9 | Pass |
 | Try it with sample data | 5 | Pass |

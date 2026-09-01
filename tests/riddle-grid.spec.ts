@@ -61,8 +61,25 @@ test('@claim:restart-reset restarting the sample clears its layout', async ({ pa
 test('@claim:hint-cost a hint reveals one position and spends one leaf', async ({ page }) => {
   await page.goto('/demo');
   await page.getByRole('button', { name: /Reveal one position/ }).click();
-  await expect(page.getByText('Fern belongs in row 1, column 3.')).toBeVisible();
+  await expect(page.getByText('Fern belongs in row 1, column 3.', { exact: true })).toBeVisible();
   await expect(page.getByText('3 leaves', { exact: true })).toBeVisible();
+});
+
+test('@claim:failed-checks three incorrect checks open the explanation', async ({ page }) => {
+  await page.goto('/demo');
+  for (const [specimen, cell] of [['fern', 0], ['acorn', 1], ['berry', 2], ['pod', 3]] as const) {
+    await page.locator(`[data-specimen="${specimen}"]`).click();
+    await page.locator(`[data-cell="${cell}"]`).click();
+  }
+  for (let attempt = 0; attempt < 3; attempt += 1) await page.getByRole('button', { name: 'Check layout' }).click();
+  await expect(page.getByRole('heading', { name: 'Here is the only layout' })).toBeVisible();
+});
+
+test('@claim:sound-setting sound choice persists in this browser', async ({ page }) => {
+  await page.goto('/demo');
+  await page.getByRole('button', { name: 'Sound on' }).click();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Sound off' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('@claim:local-progress progress stays in this browser', async ({ page }) => {
@@ -95,6 +112,8 @@ test('@claim:no-third-party demo sends requests only to this site', async ({ pag
 });
 
 test('routes, metadata, and accessibility have no serious violations', async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   for (const path of ['/', '/demo', '/privacy', '/terms', '/missing-page']) {
     await page.goto(path);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -104,6 +123,7 @@ test('routes, metadata, and accessibility have no serious violations', async ({ 
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
   }
+  expect(consoleErrors).toEqual([]);
 });
 
 test('mobile layout has no horizontal page overflow', async ({ browser }) => {

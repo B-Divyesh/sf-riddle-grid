@@ -35,6 +35,20 @@
     "sandbox": "fresh browser context at /demo; reveal one hint; assert an exact position appears and score falls from four to three leaves"
   },
   {
+    "id": "failed-checks",
+    "claim": "Three incorrect checks open the solution explanation.",
+    "where": "README and game status",
+    "test": "npm test -- --grep @claim:failed-checks",
+    "sandbox": "fresh browser context at /demo; submit the same incorrect complete layout three times; assert the explanation opens"
+  },
+  {
+    "id": "sound-setting",
+    "claim": "The sound setting stays in this browser.",
+    "where": "landing privacy section and README",
+    "test": "npm test -- --grep @claim:sound-setting",
+    "sandbox": "fresh browser context at /demo; turn sound off; reload; assert the muted state remains"
+  },
+  {
     "id": "local-progress",
     "claim": "Progress stays in this browser.",
     "where": "landing facts, privacy page, and README",

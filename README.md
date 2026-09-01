@@ -1,6 +1,6 @@
 # Riddle Grid
 
-Solve a four-specimen deduction grid in about five minutes. Riddle Grid is for coffee-break players who want a daily logic puzzle without spelling or obscure vocabulary.
+Solve a four-specimen daily deduction grid. Riddle Grid is for coffee-break players who want logic without spelling or obscure vocabulary. A round is designed for a 3–5 minute break.
 
 The game selects one shared puzzle for each UTC date. All 20 daily layouts have exactly one solution. The bundled sample reaches the same complete solve and explanation flow.
 

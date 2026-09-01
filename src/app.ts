@@ -63,7 +63,7 @@ function landing(): string {
   gameState = readState();
   return `${header()}<main id="main">
     <section class="hero" aria-labelledby="page-title">
-      <div class="hero-copy"><p class="eyebrow">Today’s five-minute field puzzle</p><h1 id="page-title" tabindex="-1">Solve one short deduction grid</h1><p class="lede">For coffee-break players who want logic without spelling tests.</p>
+      <div class="hero-copy"><p class="eyebrow">Today’s short field puzzle</p><h1 id="page-title" tabindex="-1">Solve one short deduction grid</h1><p class="lede">For coffee-break players who want logic without spelling tests.</p>
         <div class="hero-action"><a class="button primary" href="/demo" data-route>Try it with sample data</a><span>A ready-to-play sample opens.</span></div>
         <ul class="plain-facts"><li>Free. No account.</li><li>Works offline after the first visit.</li><li>Progress stays in this browser.</li></ul>
       </div>
