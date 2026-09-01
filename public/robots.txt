@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://riddle-grid.sociobot.in/sitemap.xml

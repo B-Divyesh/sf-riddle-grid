@@ -1,0 +1,65 @@
+[
+  {
+    "id": "unique-solutions",
+    "claim": "All 20 daily layouts have exactly one solution.",
+    "where": "README",
+    "test": "npm test -- --grep @claim:unique-solutions",
+    "sandbox": "deterministic solver; enumerate all row and column permutations for every authored puzzle; assert one valid layout each"
+  },
+  {
+    "id": "daily-puzzle",
+    "claim": "One shared puzzle is selected for each UTC date.",
+    "where": "landing page and README",
+    "test": "npm test -- --grep @claim:daily-puzzle",
+    "sandbox": "deterministic core; select the puzzle twice for the same fixed date; assert equal puzzle data and a valid id"
+  },
+  {
+    "id": "sample-complete",
+    "claim": "The fixed sample shows the complete game and reaches a solved result.",
+    "where": "demo introduction and README",
+    "test": "npm test -- --grep @claim:sample-complete",
+    "sandbox": "fresh browser context at /demo; place the shipped sample solution; assert the solved result and score"
+  },
+  {
+    "id": "restart-reset",
+    "claim": "Restart sample clears the sample layout.",
+    "where": "demo result action",
+    "test": "npm test -- --grep @claim:restart-reset",
+    "sandbox": "fresh browser context at /demo; solve the sample; restart; assert all grid cells are empty"
+  },
+  {
+    "id": "hint-cost",
+    "claim": "A hint reveals one exact position and costs one score leaf.",
+    "where": "game hint action and README",
+    "test": "npm test -- --grep @claim:hint-cost",
+    "sandbox": "fresh browser context at /demo; reveal one hint; assert an exact position appears and score falls from four to three leaves"
+  },
+  {
+    "id": "local-progress",
+    "claim": "Progress stays in this browser.",
+    "where": "landing facts, privacy page, and README",
+    "test": "npm test -- --grep @claim:local-progress",
+    "sandbox": "fresh browser context at /demo; place one specimen; reload; assert the same cell remains filled"
+  },
+  {
+    "id": "keyboard-controls",
+    "claim": "The puzzle works with keyboard controls.",
+    "where": "README",
+    "test": "npm test -- --grep @claim:keyboard-controls",
+    "sandbox": "fresh browser context at /demo; select with Enter; move across grid with arrows; place with Enter"
+  },
+  {
+    "id": "no-third-party",
+    "claim": "The game sends no personal data and loads no third-party runtime resources.",
+    "where": "privacy page and README",
+    "test": "npm test -- --grep @claim:no-third-party",
+    "sandbox": "fresh browser context at /demo; record requests while revealing a hint and placing a specimen; assert every request is same-origin"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "landing facts and README",
+    "test": "npm test -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo; wait for service worker; set context offline; reload; assert the sample heading is visible"
+  }
+]

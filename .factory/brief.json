@@ -1,0 +1,11 @@
+{
+  "slug": "riddle-grid",
+  "title": "Riddle Grid",
+  "summary": "Solve one short daily deduction grid with four illustrated clues.",
+  "artifact_class": "browser-game",
+  "user": "Coffee-break puzzle players fatigued by spelling games who want one short daily deduction puzzle with a satisfying reveal.",
+  "smallest_useful_product": "Daily 4x4 grid: arrange four illustrated clues under two rules, with exactly one final layout. Each attempt can request one visible constraint at a score cost; reveal gives a compact explanation.",
+  "monetization": "free",
+  "constraints": "Hand-author and validate all v1 puzzles for a unique solution; avoid cultural-knowledge assumptions and tracking scripts.",
+  "state": "RESEARCHED"
+}

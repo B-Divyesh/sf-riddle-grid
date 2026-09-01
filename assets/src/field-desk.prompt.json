@@ -1,0 +1,8 @@
+{
+  "generator": "/opt/fleet/lib/gen-image.sh",
+  "deployment": "factory-image",
+  "date": "2026-09-01",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt": "Use case: stylized-concept. Asset type: wide landing-page botanical field-guide backdrop and social art. Scene/backdrop: overhead view of a naturalist's work desk covered by one warm parchment sheet with a subtle blank four-by-four ruled study area; four clearly distinct botanical specimens arranged around the sheet: a fern frond, an acorn with oak leaves, a sprig of three blue berries, and a pale spiral seed pod; one small brass magnifier and one graphite pencil. Style/medium: refined gouache and colored-pencil editorial field-guide illustration on textured paper, original artwork. Composition/framing: wide landscape, calm asymmetry, all subjects fully visible, generous clear negative space, no interface mockup. Lighting/mood: soft warm morning window light, quiet and focused. Color palette: warm parchment, deep forest green, muted berry, ochre, graphite. Materials/textures: fibrous paper, pressed leaves, subtle pigment grain. Constraints: no people, no hands, no animals, no readable writing, no letters or numbers, no logos, no watermark, no brands, no gradients, no frame, no text."
+}
