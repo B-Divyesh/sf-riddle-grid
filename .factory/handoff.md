@@ -1,48 +1,58 @@
-# Riddle Grid handoff
+# Riddle Grid repair handoff
 
-## Independent verification status — FAIL
+## Release status
 
-Candidate `5c4e4bc7585a61558b6c1a8c68272e2b24c59df4` was independently verified against <https://riddle-grid.sociobot.in> on 2026-09-01. **Do not release this candidate.** The live root HTML and JavaScript asset hash match this candidate, and all 11 declared claim tests plus the full 13-test suite pass, but the game is not visible in the cold first viewport: the game sheet begins at y=1096 on 1440×900 and y=1582 on 390×844. This violates the browser-game first-capture requirement.
+Repair commit `1285285637648d7b61ecb3d2ab00b261f21ea275` is deployed to <https://riddle-grid.sociobot.in>. The four release blockers in independent report `c20e9687abd16a22f5b9ba98e64b5058099a94a5` are fixed.
 
-See [.factory/verification.md](verification.md) for exact commands, full live evidence, and defects. Required remediation: make the playable game visible on the initial root screen at desktop and 390px; add the required executable 60-fps claim/test; configure immutable caching for hashed static assets; preserve HTTP 404 for unknown routes. No product code was changed during verification.
+## What changed
 
-## What shipped
+- Replaced the tall root hero with a compact field-note introduction while retaining the job, audience, sample action, outcome, and three facts.
+- Put the real daily game in the cold first viewport. Phones get a four-item quick specimen tray before the grid; the full clue cards remain below it.
+- Added a cold-capture regression at exactly 1440×900 and 390×844. It checks the headline, sample action, facts, live game, a fully visible specimen control, a fully visible grid cell, an actual placement, zero serious/critical axe findings, and screenshots.
+- Added the required `phone-60fps` claim. Its test uses a fresh 390×844 Chromium context, device scale factor 2, 4× CPU throttling, and three one-second frame samples.
+- Replaced the catch-all navigation fallback with explicit `/demo`, `/privacy`, and `/terms` rewrites. Unknown paths now keep HTTP 404 while rendering the designed page.
+- Added one-year immutable caching for hashed `/assets/*` files and `no-cache` for `/sw.js`.
+- Bumped the service-worker cache to `riddle-grid-v4` so existing visitors receive the repaired shell.
+- Updated the visual thesis, copy audit, README, and claims registry.
 
-- A complete daily 4×4 deduction game with four illustrated specimens, two field rules, relation clues, optional position hints, a four-leaf score, three-check recovery, solved and explained end states, and one-tap replay.
-- Twenty authored daily layouts. The deterministic solver enumerates every valid row and column permutation and confirms exactly one solution for each layout.
-- A fixed `/demo` sandbox with isolated `demo:riddle-grid:sample` storage, a persistent demo banner, reset, and a clean exit to the daily game.
-- Pointer, touch-sized, and keyboard controls. Arrow keys move between cells; Enter or Space places; Escape picks up a placed specimen.
-- Local progress and sound settings, with no account, analytics, third-party scripts, or backend.
-- Offline reload after the first loaded visit through a versioned service worker.
-- Real `/privacy`, `/terms`, and styled not-found routes; route-specific titles and canonical URLs; sitemap, robots, favicon, social image, CSP, and security headers.
-- A botanical field-guide visual system with hand-authored specimen SVGs and an original generated desk illustration. The image prompt and generation metadata are stored under `assets/src/`.
+## Exact first-capture evidence
 
-## How to run
+The failure was reproduced before editing:
 
-```sh
-npm install
-npm run dev
-npm test
-npm run build
-```
+| Viewport | Candidate game top | Repaired live game top | Fully visible control | Fully visible first cell |
+| --- | ---: | ---: | ---: | ---: |
+| 1440×900 | 1096px | 446.31px | y=771.17–869.89 | y=749.59–859.97 |
+| 390×844 | 1582.22px | 345.16px | y=514.22–572.22 | y=616.81–677.56 |
 
-The exact deploy build command is `npm run build`. It writes `dist/index.html` and all static assets to `dist/`.
+Both repaired captures had zero horizontal overflow and no console or page errors. Evidence is under `.factory/evidence/before/` and `.factory/evidence/live/`.
 
 ## Verification
 
-- `npm test`: 13 passed in 13.4 seconds.
-- Claim tests: unique solutions, deterministic daily selection, offline reload, complete sample solve, restart reset, hint cost, three-check explanation, local progress, sound persistence, keyboard controls, and same-origin-only requests passed.
-- Axe browser checks: no serious or critical findings on `/`, `/demo`, `/privacy`, `/terms`, or the not-found route.
-- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/demo <evidence-dir>`: HTTP 200; no console errors; one title, language, h1, and main landmark present; no missing image alt text or unlabeled buttons. Measured load: 527 ms locally.
-- Lighthouse 12.8.2, mobile preset, `/demo`: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.0 s; CLS 0. INP was not available for the synthetic no-input run.
-- Mobile Chromium at 390×844: no horizontal overflow.
-- Three one-second `requestAnimationFrame` samples at 390×844: 61.1, 60.0, and 60.0 fps.
-- Production bundle: 7.65 KB gzip JavaScript and 4.20 KB gzip CSS. Responsive hero WebP is 32 KB at 640px and 138 KB at 1200px.
-- `npm audit --omit=dev`: zero vulnerabilities.
-- `npm run build`: passes with Vite 6.4.3 and produces the required `dist/` root.
+- Clean install: `npm ci` — 23 packages installed; zero audit vulnerabilities.
+- Complete suite: `npm test` — 16/16 passed in 19.2 seconds.
+- Every exact command in `.factory/claims.json` passed individually. The deterministic sample ran from “Solve the sample deduction grid” to “You found the only layout” with “Score: 4 of 4 leaves”; restart returned to zero filled cells.
+- Type and production build: `npm run build` — passed and produced `dist/`. JavaScript is 20.12 KB / 7.74 KB gzip; CSS is 15.67 KB / 4.40 KB gzip.
+- Phone frame samples at 390×844 with 4× CPU throttling: local 61.4, 60.0, 60.0 fps; live 60.4, 60.0, 60.0 fps.
+- Local Lighthouse mobile: 99 performance, 100 accessibility, 100 best practices, 100 SEO; LCP 2.0s, CLS 0, TBT 30ms. Live mobile: 100/100/100/100; LCP 1.5s, CLS 0, TBT 40ms.
+- Playwright axe integration found zero serious/critical issues on `/`, `/demo`, `/privacy`, `/terms`, and the missing-page view, including both required root viewports.
+- `verify-url.sh` found one title, `lang=en`, one h1, one main, no missing alt text, no unlabeled buttons, and no console errors. Live load measurements were 640ms for `/` and 585ms for `/demo`.
+- Keyboard-only placement reached row 1, column 3. Reduced-motion durations were `0.00001s`. Touch controls are at least 44px.
+- The live demo request log contained only `https://riddle-grid.sociobot.in`. A fresh service-worker context reloaded `/demo` offline and displayed the offline status.
+- Azure Static Web Apps returned 200 for `/`, `/demo`, `/privacy`, and `/terms`; 404 for `/missing-page`; `public, max-age=31536000, immutable` for the hashed bundle; and `no-cache` for `/sw.js`.
+- Live identity matched `dist/`: `index.html` SHA-256 `f09afd0b53a0f0650651dc02771abbdf6fdccd4572b5a3196a2269f481fd77cb`; `app-BTawVpfU.js` SHA-256 `d3528b8de5c4a5025748ab38cb439d329de965c5cf93f9e0229bdd05d5531c15`.
+- Deployment `13537c58-4f18-4116-8e0f-7c7a88743eaa` succeeded on the existing product-owned `sf-riddle-grid` Static Web App. The custom domain was Ready and returned HTTPS 200.
 
-## Known gaps and next steps
+## Run and verify
 
-- The daily schedule repeats after 20 puzzles. Add another validated set before the first rotation if more variety is needed.
-- The brief’s completion and hint-use success measures are not collected because the product intentionally ships without analytics. A future study can use voluntary, aggregate feedback without weakening the privacy promise.
-- The puzzle is state-driven and has no continuous simulation. Fixed-timestep physics is not applicable; all feedback animation is CSS and becomes static under reduced-motion preferences.
+```sh
+npm ci
+npm test
+npm run build
+npm audit --omit=dev
+```
+
+Use `swa start dist` to exercise the production response policy locally. The demo entry point is `/demo`; its isolated storage key is `demo:riddle-grid:sample`.
+
+## Known gap
+
+The authored daily schedule repeats after 20 puzzles. This is unchanged from the accepted gameplay scope and does not affect unique solutions or the complete run.
