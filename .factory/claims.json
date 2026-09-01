@@ -63,6 +63,13 @@
     "sandbox": "fresh browser context at /demo; select with Enter; move across grid with arrows; place with Enter"
   },
   {
+    "id": "phone-60fps",
+    "claim": "The game runs at 60 frames per second on the mid-range phone test profile.",
+    "where": "README and handoff",
+    "test": "npm test -- --grep @claim:phone-60fps",
+    "sandbox": "fresh Chromium context at 390x844 with device scale factor 2 and 4x CPU throttling; measure three one-second requestAnimationFrame samples; assert the median is 55-65 fps"
+  },
+  {
     "id": "no-third-party",
     "claim": "The game sends no personal data and loads no third-party runtime resources.",
     "where": "privacy page and README",

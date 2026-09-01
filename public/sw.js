@@ -1,4 +1,4 @@
-const CACHE = 'riddle-grid-v3';
+const CACHE = 'riddle-grid-v4';
 const CORE = ['/', '/demo', '/privacy', '/terms', '/favicon.svg', '/art/field-desk-640.webp', '/art/field-desk.webp'];
 
 self.addEventListener('install', (event) => {
@@ -6,7 +6,7 @@ self.addEventListener('install', (event) => {
     const cache = await caches.open(CACHE);
     const cacheFresh = async (path) => {
       const url = new URL(path, self.location.origin);
-      url.searchParams.set('precache', '3');
+      url.searchParams.set('precache', '4');
       const response = await fetch(url, { cache: 'no-store' });
       if (response.ok) await cache.put(path, response);
     };

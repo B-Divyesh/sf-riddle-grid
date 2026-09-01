@@ -34,7 +34,7 @@ No external or downloaded fonts are used.
 
 An 8px base rhythm controls gaps and padding. The readable measure is 68 characters. Puzzle tiles are softly clipped rectangles with fine ink borders, like specimen cards placed onto a ruled page. Corners range from 2px on labels to 18px on large sheets. Large shadows are avoided; hierarchy comes from paper tones, outlines, and overlap.
 
-On phones, the descriptive hero copy becomes compact and the live puzzle occupies the first viewport. Supplementary sections stack below it. Touch targets are at least 44px.
+On phones, the descriptive hero copy becomes compact and the live puzzle occupies the first viewport. A four-item specimen tray appears before the grid, while full clue cards remain below it. Supplementary sections stack below the game. Touch targets are at least 44px.
 
 ## Interaction grammar
 

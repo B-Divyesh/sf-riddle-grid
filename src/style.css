@@ -51,12 +51,13 @@ h3 { font-size: 1.32rem; }
 .demo-banner button { color: var(--paper); border-color: #a8b8ad; }
 
 main { overflow: hidden; }
-.hero { min-height: min(790px, calc(100vh - 73px)); display: grid; grid-template-columns: minmax(300px, .82fr) minmax(430px, 1.18fr); align-items: center; gap: clamp(32px, 5vw, 80px); padding: clamp(48px, 8vw, 112px) clamp(20px, 6vw, 96px); position: relative; }
-.hero::before { content: ""; position: absolute; left: clamp(20px, 3vw, 52px); top: 12%; bottom: 8%; border-left: 1px solid color-mix(in srgb, var(--berry), transparent 62%); }
+.hero { display: grid; grid-template-columns: minmax(380px, .9fr) minmax(430px, 1.1fr); align-items: center; gap: clamp(32px, 5vw, 72px); max-width: 1320px; margin: 0 auto; padding: 20px clamp(20px, 5vw, 72px) 10px; position: relative; }
+.hero::before { content: ""; position: absolute; left: clamp(20px, 3vw, 52px); top: 10%; bottom: 10%; border-left: 1px solid color-mix(in srgb, var(--berry), transparent 62%); }
 .hero-copy { position: relative; z-index: 1; padding-left: clamp(8px, 3vw, 40px); }
+.hero h1 { max-width: 14ch; font-size: clamp(2.8rem, 3.7vw, 3.5rem); }
 .eyebrow, .section-number { margin-bottom: 12px; color: var(--berry); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.lede { max-width: 37ch; margin-bottom: 28px; font-size: clamp(1.12rem, 2vw, 1.35rem); }
-.hero-action { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.lede { max-width: 37ch; margin-bottom: 16px; font-size: clamp(1.08rem, 1.6vw, 1.25rem); }
+.hero-action { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
 .hero-action span { max-width: 18ch; color: var(--ink-soft); font-size: .9rem; }
 .button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1.5px solid var(--ink); border-radius: 2px 14px 2px 14px; padding: 11px 18px; font-weight: 750; line-height: 1.2; text-decoration: none; cursor: pointer; transition: transform 180ms ease, background 180ms ease; }
 .button:hover:not(:disabled) { transform: translateY(-2px) rotate(-.2deg); }
@@ -67,10 +68,10 @@ main { overflow: hidden; }
 .plain-facts li::before { content: "✓"; margin-right: 8px; color: var(--fern); font-weight: 800; }
 .hero-art { position: relative; margin: 0; transform: rotate(1deg); }
 .hero-art::before { content: ""; position: absolute; inset: 12px -12px -12px 12px; z-index: -1; background: var(--paper-deep); border: 1px solid var(--line); }
-.hero-art img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border: 1px solid var(--ink); filter: saturate(.84) contrast(.98); }
+.hero-art img { display: block; width: 100%; max-height: 240px; aspect-ratio: 16 / 7; object-fit: cover; border: 1px solid var(--ink); filter: saturate(.84) contrast(.98); }
 .hero-art figcaption { position: absolute; right: 16px; bottom: 12px; max-width: 24ch; padding: 7px 10px; background: rgba(255, 250, 240, .92); border: 1px solid var(--line); font-family: var(--display); font-size: .83rem; }
 
-.game-sheet { width: min(1180px, calc(100% - 32px)); margin: 0 auto clamp(80px, 10vw, 144px); padding: clamp(24px, 4vw, 56px); position: relative; background-color: var(--surface); background-image: linear-gradient(rgba(45,102,76,.08) 1px, transparent 1px); background-size: 100% 32px; border: 1px solid var(--ink); box-shadow: 12px 14px 0 var(--paper-deep); }
+.game-sheet { width: min(1180px, calc(100% - 32px)); margin: 0 auto clamp(80px, 10vw, 144px); padding: clamp(24px, 2.5vw, 32px); position: relative; background-color: var(--surface); background-image: linear-gradient(rgba(45,102,76,.08) 1px, transparent 1px); background-size: 100% 32px; border: 1px solid var(--ink); box-shadow: 12px 14px 0 var(--paper-deep); }
 .game-sheet::after { content: ""; position: absolute; width: 120px; height: 34px; left: 12%; top: -17px; background: rgba(214, 165, 52, .28); transform: rotate(-2deg); }
 .sheet-heading { display: flex; justify-content: space-between; gap: 32px; align-items: start; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
 .sheet-heading h2 { font-size: clamp(2rem, 4vw, 3.2rem); }
@@ -84,6 +85,7 @@ main { overflow: hidden; }
 .field-rules b { color: var(--berry); }
 .game-layout { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(340px, 1.35fr) minmax(190px, .65fr); gap: clamp(20px, 3vw, 40px); align-items: start; }
 .game-layout h3 { margin-bottom: 14px; }
+.quick-tray { display: none; }
 .clue-stack { display: grid; gap: 10px; }
 .clue-card { width: 100%; min-height: 88px; display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; padding: 8px; text-align: left; background: var(--paper); border: 1px solid var(--line); border-radius: 2px 14px 2px 14px; cursor: pointer; transition: transform 180ms ease, border-color 180ms ease; }
 .clue-card:hover { border-color: var(--fern); transform: translateY(-2px) rotate(-.25deg); }
@@ -171,26 +173,46 @@ footer a { color: var(--paper); }
   .sound-button { font-size: .82rem; }
   .demo-banner { justify-content: space-between; gap: 12px; align-items: start; font-size: .8rem; }
   .demo-actions { flex-direction: column; }
-  .demo-banner button { min-height: 32px; padding: 3px 8px; }
-  .hero { min-height: auto; grid-template-columns: 1fr; gap: 32px; padding: 44px 20px 80px; }
+  .demo-banner button { min-height: 44px; padding: 6px 10px; }
+  .hero { grid-template-columns: 1fr; gap: 0; padding: 14px 16px 18px; }
   .hero::before { display: none; }
   .hero-copy { padding: 0; }
-  h1 { font-size: clamp(2.8rem, 14vw, 4rem); }
-  .hero-action { align-items: flex-start; flex-direction: column; gap: 8px; }
-  .hero-art { margin-inline: 4px; }
-  .game-sheet { width: calc(100% - 20px); margin-bottom: 96px; padding: 20px 12px 28px; box-shadow: 5px 7px 0 var(--paper-deep); }
+  h1 { font-size: clamp(2.5rem, 12vw, 3.5rem); }
+  .hero h1 { max-width: none; margin-bottom: 8px; font-size: 2.28rem; line-height: 1; }
+  .lede { margin-bottom: 10px; font-size: 1rem; line-height: 1.35; }
+  .hero-action { display: grid; grid-template-columns: auto 1fr; gap: 10px; margin-bottom: 10px; }
+  .hero-action .button { min-height: 44px; padding: 8px 12px; }
+  .hero-action span { max-width: 14ch; font-size: 1rem; line-height: 1.3; }
+  .plain-facts { grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 1rem; line-height: 1.25; }
+  .plain-facts li::before { display: block; margin: 0; }
+  .hero-art { display: none; }
+  .game-sheet { width: calc(100% - 12px); margin-bottom: 96px; padding: 14px 10px 24px; box-shadow: 4px 6px 0 var(--paper-deep); }
+  .game-sheet::after { width: 76px; height: 22px; top: -11px; }
   .sheet-heading { gap: 12px; }
+  .sheet-heading { padding-bottom: 10px; }
+  .sheet-heading h2 { margin-bottom: 0; font-size: 1.65rem; }
+  .sheet-heading p:not(.section-number) { display: none; }
+  .section-number { margin-bottom: 4px; }
   .leaf-score { min-width: 85px; }
-  .field-rules { grid-template-columns: 1fr; }
+  .field-rules { grid-template-columns: 1fr 1fr; margin: 10px 0; }
+  .field-rules span { display: grid; gap: 0; padding: 5px 7px; font-size: 1rem; line-height: 1.25; }
   .game-layout { grid-template-columns: 1fr; }
+  .quick-tray { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; order: 1; }
+  .quick-specimen { min-width: 0; min-height: 58px; display: grid; grid-template-columns: 32px 1fr; place-items: center; gap: 2px; padding: 4px; background: var(--paper); border: 1px solid var(--line); border-radius: 2px 10px 2px 10px; font-size: 1rem; font-weight: 750; line-height: 1.05; cursor: pointer; }
+  .quick-specimen .specimen-art { width: 32px; height: 32px; }
+  .quick-specimen.selected { border: 3px solid var(--berry); background: #f8e8e8; }
+  .quick-specimen.placed { background: #e8efe7; }
+  .grid-panel { order: 2; }
+  .clue-stack { order: 3; }
+  .hint-panel { order: 4; }
   .clue-stack { grid-template-columns: 1fr 1fr; }
   .clue-stack h3 { grid-column: 1 / -1; }
   .clue-card { min-height: 132px; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr; align-items: start; }
   .clue-card .specimen-art { width: 48px; height: 48px; }
   .clue-copy { grid-column: 1 / -1; }
   .card-state { grid-area: 1 / 2; }
-  .grid-panel { width: min(100%, 430px); margin: auto; }
-  .grid-cell { min-height: 64px; }
+  .grid-panel { width: min(100%, 300px); margin: auto; }
+  .grid-cell { min-height: 60px; }
   .hint-panel { grid-template-columns: 1fr; }
   .hint-panel h3 { grid-column: auto; }
   .hint-panel .button { width: 100%; }

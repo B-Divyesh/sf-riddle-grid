@@ -4,14 +4,13 @@ Checked 2026-09-01. Word counts treat contractions and hyphenated terms as one w
 
 | Copy | Words | Result |
 | --- | ---: | --- |
-| Today’s short field puzzle | 4 | Pass |
 | Solve one short deduction grid | 5 | Pass |
 | For coffee-break players who want logic without spelling tests. | 9 | Pass |
 | Try it with sample data | 5 | Pass |
-| A ready-to-play sample opens. | 4 | Pass |
-| Free. No account. | 3 | Pass |
-| Works offline after the first visit. | 6 | Pass |
-| Progress stays in this browser. | 5 | Pass |
+| Opens a ready sample. | 4 | Pass |
+| Free to play. | 3 | Pass |
+| Offline after one visit. | 4 | Pass |
+| Saved in this browser. | 4 | Pass |
 | Today’s clues belong on one field grid. | 7 | Pass |
 | Read the clue cards. | 4 | Pass |
 | Above and left describe each pair. | 6 | Pass |

@@ -15,6 +15,8 @@ Use a pointer or touch to select a specimen and then a cell. With a keyboard, us
 
 Progress stays in this browser. The game sends no personal data and loads no third-party runtime resources. It works offline after the first visit.
 
+The game runs at 60 frames per second on the 390×844 mid-range phone test profile. The automated check uses 4× CPU throttling.
+
 ## Develop
 
 Requirements: Node.js 20 or newer.

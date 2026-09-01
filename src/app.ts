@@ -63,9 +63,9 @@ function landing(): string {
   gameState = readState();
   return `${header()}<main id="main">
     <section class="hero" aria-labelledby="page-title">
-      <div class="hero-copy"><p class="eyebrow">Today’s short field puzzle</p><h1 id="page-title" tabindex="-1">Solve one short deduction grid</h1><p class="lede">For coffee-break players who want logic without spelling tests.</p>
-        <div class="hero-action"><a class="button primary" href="/demo" data-route>Try it with sample data</a><span>A ready-to-play sample opens.</span></div>
-        <ul class="plain-facts"><li>Free. No account.</li><li>Works offline after the first visit.</li><li>Progress stays in this browser.</li></ul>
+      <div class="hero-copy"><h1 id="page-title" tabindex="-1">Solve one short deduction grid</h1><p class="lede">For coffee-break players who want logic without spelling tests.</p>
+        <div class="hero-action"><a class="button primary" href="/demo" data-route>Try it with sample data</a><span>Opens a ready sample.</span></div>
+        <ul class="plain-facts"><li>Free to play.</li><li>Offline after one visit.</li><li>Saved in this browser.</li></ul>
       </div>
       <figure class="hero-art"><picture><source srcset="/art/field-desk-640.webp 640w, /art/field-desk.webp 1200w" sizes="(max-width: 760px) 92vw, 48vw" type="image/webp"><img src="/art/field-desk.webp" width="1200" height="800" alt="Four pressed plant specimens surround a blank field grid." fetchpriority="high" decoding="async"></picture><figcaption>Today’s clues belong on one field grid.</figcaption></figure>
     </section>
@@ -102,6 +102,7 @@ function gameMarkup(isDemo: boolean): string {
     <div class="sheet-heading"><div><p class="section-number">Field sheet ${currentPuzzle.id} · ${demoMode ? 'sample' : dateKey}</p><h2 id="game-title">${currentPuzzle.title}</h2><p>${currentPuzzle.note}</p></div><div class="leaf-score" aria-label="Maximum score: ${score} leaves">${Array.from({ length: 4 }, (_, index) => `<span class="leaf ${index < score ? '' : 'spent'}">◆</span>`).join('')}<small>${score} leaves</small></div></div>
     <div class="field-rules" aria-label="The two field rules"><span><b>Rule 1</b> One specimen in each row</span><span><b>Rule 2</b> One specimen in each column</span></div>
     <div class="game-layout">
+      <div class="quick-tray" role="group" aria-label="Quick specimen tray">${specimens.map(({ id }) => `<button type="button" class="quick-specimen ${gameState.selected === id ? 'selected' : ''} ${gameState.placements[id] ? 'placed' : ''}" data-quick-specimen="${id}" aria-pressed="${gameState.selected === id}" aria-label="${specimenName(id)}. ${gameState.placements[id] ? `Placed in ${cellName(gameState.placements[id]!)}.` : 'Not placed.'} Select specimen.">${icon(id)}<span>${specimenName(id)}</span></button>`).join('')}</div>
       <div class="clue-stack" aria-label="Illustrated clues"><h3>Clue cards</h3>${specimens.map(({ id }) => clueCard(id)).join('')}</div>
       <div class="grid-panel"><div class="grid-labels top" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span></div><div class="grid-with-rows"><div class="grid-labels side" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span></div><div class="puzzle-grid" role="group" aria-label="Four by four field grid">${Array.from({ length: 16 }, (_, index) => {
         const row = Math.floor(index / 4); const col = index % 4; const id = occupiedAt(row, col);
@@ -198,11 +199,11 @@ function updateGame(focusSelector?: string): void {
   if (focusSelector) requestAnimationFrame(() => document.querySelector<HTMLElement>(focusSelector)?.focus());
 }
 
-function selectSpecimen(id: SpecimenId): void {
+function selectSpecimen(id: SpecimenId, focusSelector = `[data-specimen="${id}"]`): void {
   if (gameState.phase !== 'playing') return;
   if (gameState.placements[id]) delete gameState.placements[id];
   gameState.selected = id;
-  updateGame(`[data-specimen="${id}"]`);
+  updateGame(focusSelector);
 }
 
 function chooseCell(index: number): void {
@@ -249,6 +250,7 @@ function revealHint(): void {
 
 function bindGameEvents(): void {
   document.querySelectorAll<HTMLElement>('[data-specimen]').forEach((button) => button.addEventListener('click', () => selectSpecimen(button.dataset.specimen as SpecimenId)));
+  document.querySelectorAll<HTMLElement>('[data-quick-specimen]').forEach((button) => button.addEventListener('click', () => selectSpecimen(button.dataset.quickSpecimen as SpecimenId, `[data-quick-specimen="${button.dataset.quickSpecimen}"]`)));
   document.querySelectorAll<HTMLButtonElement>('[data-cell]').forEach((button) => {
     button.addEventListener('click', (event) => { if (event.detail !== 0) chooseCell(Number(button.dataset.cell)); });
     button.addEventListener('keydown', (event) => {

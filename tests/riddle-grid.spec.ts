@@ -45,6 +45,7 @@ test('@claim:offline-reload game reloads offline after the first visit', async (
 
 test('@claim:sample-complete sample reaches the solved result', async ({ page }) => {
   await page.goto('/demo');
+  await expect(page.getByRole('heading', { name: 'Solve the sample deduction grid' })).toBeVisible();
   await solveSample(page);
   await expect(page.getByRole('heading', { name: 'You found the only layout' })).toBeVisible();
   await expect(page.getByText('Score: 4 of 4 leaves.')).toBeVisible();
@@ -101,6 +102,35 @@ test('@claim:keyboard-controls grid works with keyboard controls', async ({ page
   await expect(page.locator('[data-cell="2"]')).toHaveAttribute('aria-label', /Fern/);
 });
 
+test('@claim:phone-60fps game sustains the phone frame-rate target', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  const page = await context.newPage();
+  const session = await context.newCDPSession(page);
+  await session.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+  await page.goto('http://127.0.0.1:4173/demo');
+  const samples = await page.evaluate(async () => {
+    const measured: number[] = [];
+    for (let sample = 0; sample < 3; sample += 1) {
+      const started = performance.now();
+      let frames = 0;
+      await new Promise<void>((resolve) => {
+        const tick = (now: number) => {
+          frames += 1;
+          if (now - started >= 1_000) resolve();
+          else requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+      measured.push(frames * 1_000 / (performance.now() - started));
+    }
+    return measured;
+  });
+  const median = [...samples].sort((a, b) => a - b)[1];
+  expect(median).toBeGreaterThanOrEqual(55);
+  expect(median).toBeLessThanOrEqual(65);
+  await context.close();
+});
+
 test('@claim:no-third-party demo sends requests only to this site', async ({ page }) => {
   const origins = new Set<string>();
   page.on('request', (request) => origins.add(new URL(request.url()).origin));
@@ -132,4 +162,46 @@ test('mobile layout has no horizontal page overflow', async ({ browser }) => {
   await page.goto('http://127.0.0.1:4173/demo');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await context.close();
+});
+
+test('cold root capture contains plain copy and an operable game at required viewports', async ({ browser }, testInfo) => {
+  for (const viewport of [{ width: 1440, height: 900, name: 'desktop' }, { width: 390, height: 844, name: 'mobile' }] as const) {
+    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
+    const page = await context.newPage();
+    await page.goto('http://127.0.0.1:4173/');
+
+    for (const selector of ['h1', '.hero-action .button', '.plain-facts', '[data-testid="game"]', '[data-cell="0"]']) {
+      const box = await page.locator(selector).boundingBox();
+      expect(box, `${selector} must render at ${viewport.width}x${viewport.height}`).not.toBeNull();
+      expect(box!.y, `${selector} must start inside the cold viewport`).toBeLessThan(viewport.height);
+    }
+    const cell = await page.locator('[data-cell="0"]').boundingBox();
+    expect(cell!.y + cell!.height, 'the first playable grid cell must be fully visible').toBeLessThanOrEqual(viewport.height);
+
+    const specimen = viewport.name === 'mobile'
+      ? page.locator('[data-quick-specimen="fern"]')
+      : page.locator('[data-specimen="fern"]');
+    const specimenBox = await specimen.boundingBox();
+    expect(specimenBox!.y + specimenBox!.height, 'a specimen control must be fully visible').toBeLessThanOrEqual(viewport.height);
+    await page.screenshot({ path: testInfo.outputPath(`cold-root-${viewport.width}x${viewport.height}.png`) });
+    const accessibility = await new AxeBuilder({ page }).analyze();
+    expect(accessibility.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
+
+    await specimen.click();
+    await page.locator('[data-cell="2"]').click();
+    await expect(page.locator('[data-cell="2"]')).toHaveAttribute('aria-label', /Fern/);
+    await context.close();
+  }
+});
+
+test('static host policy preserves real 404 responses and immutable hashed assets', async () => {
+  const config = JSON.parse(await import('node:fs').then(({ readFileSync }) => readFileSync(new URL('../public/staticwebapp.config.json', import.meta.url), 'utf8')));
+  expect(config.navigationFallback).toBeUndefined();
+  expect(config.routes).toEqual(expect.arrayContaining([
+    expect.objectContaining({ route: '/assets/*', headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } }),
+    { route: '/demo', rewrite: '/index.html' },
+    { route: '/privacy', rewrite: '/index.html' },
+    { route: '/terms', rewrite: '/index.html' },
+  ]));
+  expect(config.responseOverrides?.['404']).toEqual({ rewrite: '/404.html' });
 });
