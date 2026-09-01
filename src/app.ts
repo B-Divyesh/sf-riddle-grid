@@ -55,7 +55,7 @@ function header(): string {
 }
 
 function footer(): string {
-  return `<footer><p>Riddle Grid is a free daily deduction game.</p><nav aria-label="Footer navigation"><a href="/privacy" data-route>Privacy</a><a href="/terms" data-route>Terms</a><a href="https://sociobot.in">Built by Param Factory <span class="sr-only">(external site)</span></a></nav><p>Original generated field-desk art · v1.0.0</p></footer>`;
+  return `<footer><p>Riddle Grid is a free daily deduction game.</p><nav aria-label="Footer navigation"><a href="/privacy" data-route>Privacy</a><a href="/terms" data-route>Terms</a><a href="https://sociobot.in">Built by Param Factory <span aria-hidden="true">↗</span><span class="sr-only">(external site)</span></a></nav><p>Original generated field-desk art · v1.0.0</p></footer>`;
 }
 
 function landing(): string {
