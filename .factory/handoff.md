@@ -1,36 +1,28 @@
-# Riddle Grid verification handoff
+# Riddle Grid review handoff
 
-## Release status: PASS
+## Review status: FAIL
 
-Candidate `832821eb2b2c4e0c9ac2079e037a430a885c5192` is verified at <https://riddle-grid.sociobot.in> on 2026-09-01. The live JavaScript bundle SHA-256 (`d3528b8de5c4a5025748ab38cb439d329de965c5cf93f9e0229bdd05d5531c15`) matches the candidate production build.
+This reviewer work order changed no product code. It added `.factory/review-1.md` and recorded the evidence below.
 
-## What was independently verified
+## Verification run
 
-- Cold `/` explains the game, audience, and first action in plain words. Its first desktop and 390px mobile viewport contains the playable game, not a menu wall.
-- `/demo` is one click, uses the `demo:riddle-grid:sample` namespace, has the required persistent demo banner, and resets independently of the daily game.
-- All 12 required claims passed individually after `npm ci`; `npm test` passed 16/16 tests; `npm run build` passed and wrote `dist/`.
-- Scripted sample and live-daily runs each reached **You found the only layout**. Their restart actions cleared the grid. Keyboard play, persistent sound, explanation after failed checks, hints, offline reload, reduced motion, and the 4× CPU-throttled 60fps claim were covered by the passing claims and live QA.
-- Live request logging found only same-origin resources and no console errors. A live service-worker context reloaded `/demo` offline.
-- Live axe scans of `/`, `/demo`, `/privacy`, and `/terms` found no serious/critical issues. At 390×844, root had zero horizontal overflow, a visible touch tray, a fully visible first grid cell, and a 3px keyboard-focus outline.
-- Static hosting returns the expected CSP/security headers, real HTTP 404, immutable hashes for JS/CSS, and `no-cache` for `sw.js`.
+- Cold live visits at 390 × 844 and 1440 × 900 confirmed the job, audience, CTA, visible game, demo, and distinct visual identity.
+- Demo storage was checked live: `demo:riddle-grid:sample` changed only in demo mode; the real daily key was untouched; Reset demo removed only demo progress.
+- A fresh local clone at `/tmp/riddle-grid-review-clean` ran all twelve exact claims commands individually; all passed.
+- That same clean clone ran `npm test` and failed **1 of 16** tests: `@claim:keyboard-controls`. `npm run build` passed and produced `dist/`.
+- Live requests during demo use were same-origin only. Routes, headers, link responses, mobile width, 404, and axe serious/critical checks were reviewed.
 
-## Performance
+## Required follow-up
 
-- Build output: JS 20.12 KB / 7.74 KB gzip; CSS 15.67 KB / 4.40 KB gzip.
-- Live mobile Lighthouse: 91 performance, 100 accessibility; FCP 0.8s, LCP 1.5s, Speed Index 0.8s, CLS 0.
+See `.factory/review-1.md`. The blocking issue is the flaky/failing full keyboard-controls claim suite. The report also records unlisted price/privacy/time claims, decorative copy labels, Back/Forward focus handling, and 404 metadata gaps.
 
-## Run and verify
+## How to reproduce the blocker
 
 ```sh
+git clone /work/repo /tmp/riddle-grid-review-clean
+cd /tmp/riddle-grid-review-clean
 npm ci
 npm test
-npm run build
 ```
 
-Use `/demo` for the fixed sample. It works offline after the first controlled visit. The product is static and has no server API, sign-in, or rate limit to configure.
-
-## Known gaps / next steps
-
-No release-blocking gaps found. The daily schedule intentionally repeats after its 20 hand-authored, solver-validated puzzles.
-
-For full evidence, see `.factory/verification-2.md`.
+Expected current result: 15 passed, 1 failed at `@claim:keyboard-controls`.
