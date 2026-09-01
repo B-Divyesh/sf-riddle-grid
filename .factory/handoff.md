@@ -1,5 +1,11 @@
 # Riddle Grid handoff
 
+## Independent verification status — FAIL
+
+Candidate `5c4e4bc7585a61558b6c1a8c68272e2b24c59df4` was independently verified against <https://riddle-grid.sociobot.in> on 2026-09-01. **Do not release this candidate.** The live root HTML and JavaScript asset hash match this candidate, and all 11 declared claim tests plus the full 13-test suite pass, but the game is not visible in the cold first viewport: the game sheet begins at y=1096 on 1440×900 and y=1582 on 390×844. This violates the browser-game first-capture requirement.
+
+See [.factory/verification.md](verification.md) for exact commands, full live evidence, and defects. Required remediation: make the playable game visible on the initial root screen at desktop and 390px; add the required executable 60-fps claim/test; configure immutable caching for hashed static assets; preserve HTTP 404 for unknown routes. No product code was changed during verification.
+
 ## What shipped
 
 - A complete daily 4×4 deduction game with four illustrated specimens, two field rules, relation clues, optional position hints, a four-leaf score, three-check recovery, solved and explained end states, and one-tap replay.
