@@ -49,6 +49,22 @@ Results on 2026-09-02 UTC:
 - `/opt/fleet/lib/verify-url.sh` passed for local `/`, `/demo`, `/privacy`, and `/terms`: HTTP 200, no console/page errors, one h1 and main per route, `lang="en"`, titles, and no missing image alt or unlabeled buttons.
 - Local mobile Lighthouse on `/demo`: Performance **98**, Accessibility **100**, Best Practices **100**, SEO **100**; FCP 1.0 s, LCP 1.1 s, CLS 0, TBT 160 ms.
 
-## Deployment and known gaps
+## Deployment and live verification
 
-Deployment and live identity verification are the remaining work for this handoff update. There are no known product gaps; backend-only checks (health, rate limits, persistence boundaries, and Entra) do not apply to this static game.
+Commit `f4984c8` was pushed to `origin/main` and deployed on 2026-09-02 UTC with `/opt/fleet/lib/deploy-static.sh riddle-grid dist` (deployment `983d2706-d18a-4728-bf49-e752164ce436`). The target is live at <https://riddle-grid.sociobot.in>.
+
+- Live `/`, `/demo`, `/privacy`, and `/terms` each return 200. The worker URL check found no console/page errors and confirmed route titles, `lang="en"`, one h1, one main, image alt text, and labeled buttons at desktop and 390×844.
+- A live browser run proved demo starts with its own sound state, reset and exit remove both demo keys, keyboard completion focuses `result-title`, the live privacy target is 201.75×44px, and all five sampled clue/hint text values are 16px. `registration.update()` completed and the live demo reloaded while offline.
+- Live response headers include the expected same-origin CSP with `frame-ancestors 'none'`, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and restrictive camera/microphone/geolocation permissions.
+- Live identity exactly matches the deployed `dist/` build:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `index.html` | `93b238261728540cc593761ea3c7c86707fdc56e9445efe97c9ce332f2a219f2` |
+| `sw.js` | `7656f41655cbebb3864cc1cc2c16c6264f381b2b5628163ff91a0a59949eacb3` |
+| `app-BkVH45HD.js` | `41c5b686d04cab424fb556038dcab94fe97759e6e5331978be54c010954a11c2` |
+| `app-DtfTekoQ.css` | `431d85d0da17d8c5a3e2d2c527ec108fd8ff69e3928fe64df9dd238d43d8df40` |
+
+## Known gaps
+
+None. Backend-only checks (health, rate limits, persistence boundaries, and Entra) do not apply to this static game.
