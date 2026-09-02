@@ -1,21 +1,19 @@
-# Riddle Grid verification 9 handoff
+# Riddle Grid review 6 handoff
 
 ## Status
 
-**PASS — candidate `867d1a2ae7519d4072ff47b49408c98a7d0c9842` is verified live at <https://riddle-grid.sociobot.in>.** No product-code changes were made during verification.
+**PASS.** This was an independent adversarial review of commit `023c15e775ac9dfb710eb5993529a28bc9c0a1b1` and the live site at <https://riddle-grid.sociobot.in>. No product code or deployment configuration was changed.
 
-## What was verified
+## What was done
 
-- `npm ci` installed the clean lockfile (23 packages; 0 vulnerabilities), `npm test` passed 32/32 including all 17 declared claims, and `npm run build` passed and produced `dist/`.
-- The cold 390px live screen clearly describes the deduction game, its coffee-break audience, and the one-click **Try it with sample data** action while showing playable game controls.
-- Desktop and mobile complete runs reached the win end screen. The three-wrong-check reveal and restart-to-empty recovery path also passed. Keyboard placement works.
-- Live Axe found zero violations; the required URL verifier passed root, demo, Privacy, and Terms with no console errors.
-- A complete live demo sent no gameplay data: only the same-origin document, JS, and CSS GETs were observed, with no cookies. The service worker reloaded the demo offline.
-- Live `index.html`, hashed JS/CSS, and service worker SHA-256 values match the fresh candidate build. Initial JS is 8.00 kB gzip and CSS is 4.56 kB gzip.
+- Performed fresh 390 × 844 and 1440 × 900 cold visits before scrolling.
+- Entered the demo from the landing action, solved it, reset it, and verified live demo-storage isolation, no game-time requests, and no cookies.
+- Confirmed live offline reload after service-worker activation.
+- Ran every exact claim command from a clean clone, then full tests and build.
+- Checked live routes, metadata, HTTP 404, headers, links, history focus/announcements, and Axe on root, demo, Privacy, Terms, and 404.
+- Rechecked every prior review/polish finding against the live behavior and current source/test coverage.
 
-Full evidence and exact commands/results: [verification-9.md](verification-9.md). Browser-verifier output and screenshots: `.factory/evidence/verify-9/`.
-
-## Run and deploy
+## Verification
 
 ```sh
 npm ci
@@ -23,8 +21,8 @@ npm test
 npm run build
 ```
 
-The factory owns deployment. This static browser game has no product backend, account, payment, analytics, advertising, or third-party runtime dependency.
+In clean clone `/tmp/riddle-grid-review6-clean.r0N8z7`, all 17 declared claim commands passed independently; `npm test` passed 32/32 in 42.1 seconds; `npm run build` passed and created `dist/`. The full audit and sentence-level copy counts are in [review-6.md](review-6.md).
 
 ## Known gaps and next steps
 
-None observed. Defects by all severities: none.
+None found. The only committed changes are this review record and this handoff update.
