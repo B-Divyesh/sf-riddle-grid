@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-09-02",
+  "origin": "https://riddle-grid.sociobot.in",
+  "labels": [
+    { "text": "Fern", "lines": 1, "clientWidth": 40, "scrollWidth": 40 },
+    { "text": "Acorn", "lines": 1, "clientWidth": 52, "scrollWidth": 52 },
+    { "text": "Berries", "lines": 1, "clientWidth": 65, "scrollWidth": 65 },
+    { "text": "Seed pod", "lines": 1, "clientWidth": 84, "scrollWidth": 84 }
+  ],
+  "firstCellBottomPxAt390x844": 752.5625,
+  "hintHeading": "Hints",
+  "demoIsolated": true,
+  "demoReset": true,
+  "startForRealClearedDemo": true,
+  "keyboardPlacement": "Fern at row 1, column 3",
+  "sampleResult": "You found the only layout",
+  "paymentControls": 0,
+  "requestOrigins": ["https://riddle-grid.sociobot.in"],
+  "normalRouteConsoleErrors": [],
+  "backForwardFocus": true,
+  "backForwardAnnouncements": true,
+  "liveOfflineReload": true,
+  "routes": [
+    { "path": "/", "status": 200, "title": "Riddle Grid — Solve a daily deduction grid", "axeSeriousCritical": 0 },
+    { "path": "/?demo=1", "status": 200, "title": "Demo — Riddle Grid", "axeSeriousCritical": 0 },
+    { "path": "/privacy", "status": 200, "title": "Privacy — Riddle Grid", "axeSeriousCritical": 0 },
+    { "path": "/terms", "status": 200, "title": "Terms — Riddle Grid", "axeSeriousCritical": 0 },
+    { "path": "/missing-page", "status": 404, "title": "Page not found — Riddle Grid", "axeSeriousCritical": 0 }
+  ],
+  "assetCacheControl": "public, max-age=31536000, immutable"
+}

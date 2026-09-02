@@ -25,3 +25,4 @@
 - All 15 entries in `.factory/claims.json` pass from a clean clone using their exact commands.
 - `npm test` passes 24 tests. `npm run build` produces `dist/` with 21.19 kB JavaScript and 15.95 kB CSS before gzip.
 - Playwright axe checks all routes with no serious or critical findings. Lighthouse scores and post-deploy URL checks are recorded in `.factory/handoff.md`.
+- The post-deploy cold audit is recorded in `evidence/polish-2/live-audit.json`; live Lighthouse scored 100 in all four categories.
