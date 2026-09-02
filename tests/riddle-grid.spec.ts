@@ -240,6 +240,67 @@ test('mobile layout has no horizontal page overflow', async ({ browser }) => {
   await context.close();
 });
 
+test('accessibility regressions: focus, mobile targets, and 200% specimen labels stay usable', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/demo');
+
+  await page.locator('.quick-specimen').first().focus();
+  const focus = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    const button = document.querySelector<HTMLElement>('.quick-specimen:focus-visible')!;
+    return {
+      outline: getComputedStyle(button).outlineColor,
+      surfaces: [
+        root.getPropertyValue('--paper').trim(),
+        root.getPropertyValue('--paper-deep').trim(),
+        root.getPropertyValue('--surface').trim(),
+        '#f5f0e1',
+      ],
+    };
+  });
+  expect(focus.outline).toBe('rgb(115, 84, 0)');
+  const relativeLuminance = (hex: string) => {
+    const rgb = hex.match(/[a-f\d]{2}/gi)!.map((value) => parseInt(value, 16) / 255);
+    const [red, green, blue] = rgb.map((value) => value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    return red * 0.2126 + green * 0.7152 + blue * 0.0722;
+  };
+  for (const surface of focus.surfaces) {
+    const ratio = (relativeLuminance(surface) + 0.05) / (relativeLuminance('#735400') + 0.05);
+    expect(ratio).toBeGreaterThanOrEqual(3);
+  }
+
+  const mobileTargets = await page.locator('.wordmark, footer a').evaluateAll((links) => links.map((link) => {
+    const { width, height } = link.getBoundingClientRect();
+    return { text: link.textContent?.trim(), width, height };
+  }));
+  expect(mobileTargets).toHaveLength(4);
+  for (const target of mobileTargets) {
+    expect(target.width, `${target.text} needs a 44px-wide target`).toBeGreaterThanOrEqual(44);
+    expect(target.height, `${target.text} needs a 44px-tall target`).toBeGreaterThanOrEqual(44);
+  }
+
+  await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+  const textResize = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    mainClientWidth: document.querySelector('main')!.clientWidth,
+    mainScrollWidth: document.querySelector('main')!.scrollWidth,
+    specimens: [...document.querySelectorAll<HTMLElement>('.quick-specimen')].map((specimen) => {
+      const box = specimen.getBoundingClientRect();
+      return { label: specimen.textContent?.trim(), clientWidth: specimen.clientWidth, scrollWidth: specimen.scrollWidth, right: box.right };
+    }),
+  }));
+  expect(textResize.mainScrollWidth).toBeLessThanOrEqual(textResize.mainClientWidth);
+  expect(textResize.specimens.map(({ label }) => label)).toEqual(['Fern', 'Acorn', 'Berries', 'Seed pod']);
+  for (const specimen of textResize.specimens) {
+    expect(specimen.scrollWidth, `${specimen.label} must not be clipped at 200% text`).toBeLessThanOrEqual(specimen.clientWidth);
+    expect(specimen.right, `${specimen.label} must remain inside the viewport at 200% text`).toBeLessThanOrEqual(textResize.viewport);
+  }
+  await page.locator('[data-quick-specimen="pod"]').click();
+  await expect(page.locator('[data-quick-specimen="pod"]')).toHaveAttribute('aria-pressed', 'true');
+  await context.close();
+});
+
 test('cold root capture contains plain copy and an operable game at required viewports', async ({ browser }, testInfo) => {
   for (const viewport of [{ width: 1440, height: 900, name: 'desktop' }, { width: 390, height: 844, name: 'mobile' }] as const) {
     const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });

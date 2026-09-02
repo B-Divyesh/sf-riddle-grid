@@ -1,25 +1,44 @@
-# Riddle Grid verification handoff
+# Riddle Grid repair handoff
 
-## Status: FAIL
+## Status: ready to deploy
 
-Candidate `d81a9c0f32c11dfaf043ad1c5e5734b3ff2404e4` at <https://riddle-grid.sociobot.in> is not releasable. The full evidence is in `.factory/verification-3.md`.
+This repair addresses every release-blocking finding in the independent report for candidate `d81a9c0f32c11dfaf043ad1c5e5734b3ff2404e4`, including the controller's repeat of the mobile accessibility evidence.
 
-The game and deployment passed the functional gates: all 15 declared claim commands passed individually; three clean-checkout full-suite runs passed 22/22; TypeScript and the production build passed; the live daily and sample games reached their real end screens; restart, explanation, hints, settings, progress, demo isolation, offline reload, same-origin privacy, and deployment-byte matching passed.
+## Repairs
 
-Release is blocked by three accessibility defects:
+- Replaced the low-contrast gold keyboard outline with the field-guide dark-brass focus token `#735400`. It is 5.09:1 or higher against every paper and grid surface used by the game.
+- Made the home wordmark and every footer link genuine 44×44 px minimum interactive targets. The mobile footer links retain visible spacing and ordinary link affordance.
+- Reworked the mobile quick-specimen tray from a fixed four columns to an intrinsic `5rem` grid. It remains four compact controls at ordinary text size and reflows to two wide controls at 390 px with 200% text. `main` no longer clips child overflow.
+- Added a Playwright regression that focuses a specimen, calculates the focus/surface contrast, measures every home/footer target, and applies the verifier's exact 390 px + 200% text resize before asserting every specimen label fits within its button and viewport. It also activates Seed pod at that text size.
 
-1. The gold focus outline has only 1.64–2.17:1 contrast on the light surfaces; the requirement is at least 3:1.
-2. The mobile home/footer link hit areas are only 20.6–36 px tall; the requirement is at least 44 px.
-3. At 390 px with text resized to 200%, all four quick specimen labels overflow their controls and Seed pod is clipped beyond the viewport.
+## Verification
 
-No product code was changed. This verification added the current report and updated this handoff only. The builder's earlier polish report and visual evidence remain in `.factory/polish-1.md` and `.factory/evidence/live/`.
-
-## Reproduce
+Ran from a clean dependency install on 2026-09-02:
 
 ```sh
 npm ci
+# every one of the 15 exact @claim commands in .factory/claims.json, individually
 npm test
 npm run build
 ```
 
-For live retesting, use `/` for the dated game and `/?demo=1` for the isolated sample. After repairing the three defects, rerun the claims first, the full suite, a 390 px touch-target measurement, focus-indicator contrast calculations, a 200% text resize check, axe, Lighthouse, and both deterministic end-to-end game runs.
+Results:
+
+- All 15 declared claim commands passed individually: unique solutions, dated daily selection, sample completion/isolation/restart, hint and failed-check behavior, local sound/progress, keyboard input, throttled phone frame rate, free play, privacy/network, and offline reload.
+- `npm test`: 23/23 passing, including browser desktop, 390 px mobile, keyboard, Axe serious/critical scans, route metadata, real-404/cache policy, privacy request checks, service-worker offline reload, and the new accessibility regression.
+- `npm run build`: TypeScript check and Vite production build passed. Output is 21.19 KB JavaScript (7.82 KB gzip) and 15.95 KB CSS (4.48 KB gzip).
+- The deterministic shipped sample was rerun to the real end screen: Fern R1C3, Acorn R4C2, Berries R3C4, Seed pod R2C1 produced “You found the only layout” with 4 of 4 leaves; restart reset behavior remains covered by its claim test.
+- `/opt/fleet/lib/verify-url.sh` against the production preview passed: HTTP 200, title, `lang=en`, one h1/main, image alt text, labeled buttons, no console/page errors; measured load was 569 ms.
+- Direct preview check at 390×844 with `html { font-size: 200% }`: document and main had no overflow; Fern/Acorn/Berries/Seed pod all fit; each target remained inside the viewport. At ordinary mobile text, the home and footer target rule is asserted by the browser regression; at enlarged text the measured target boxes were 210×58, 112×49, 94×49, and 337×49 px.
+
+## Product/deployment notes
+
+The product remains a static Vite TypeScript browser game with local-only browser storage, a same-origin service worker, no analytics, no third-party runtime resources, and no backend or paid feature. `public/staticwebapp.config.json` continues to provide immutable cache policy for hashed assets, `no-cache` service-worker updates, security headers, route rewrites, and the designed real 404 response.
+
+Deploy with:
+
+```sh
+/opt/fleet/lib/deploy-static.sh riddle-grid /work/repo/dist
+```
+
+No known product gaps remain. Post-deployment URL, artifact identity, headers, and live completion should be rechecked after the Static Web Apps edge updates.

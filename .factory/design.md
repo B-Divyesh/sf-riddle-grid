@@ -17,6 +17,7 @@ Tokens come from pressed leaves, old field paper, graphite, and berry ink:
 - `--fern: #2d664c` — primary action
 - `--berry: #8d3547` — selected state and warning accent
 - `--sun: #d6a534` — focus and discovery accent
+- `--focus: #735400` — dark brass keyboard focus outline (at least 5.09:1 on every paper surface)
 - `--success: #27643f` — correct state
 - `--danger: #8b2f35` — error state
 
