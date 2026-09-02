@@ -110,7 +110,7 @@ function gameMarkup(isDemo: boolean): string {
         const row = Math.floor(index / 4); const col = index % 4; const id = occupiedAt(row, col);
         return `<button type="button" class="grid-cell ${id ? 'filled' : ''}" data-cell="${index}" aria-label="Row ${row + 1}, column ${col + 1}${id ? `, ${specimenName(id)}` : ', empty'}" tabindex="${index === activeCell ? '0' : '-1'}">${id ? `${icon(id)}<span>${specimenName(id)}</span>` : '<span class="cell-dot" aria-hidden="true">·</span>'}</button>`;
       }).join('')}</div></div></div>
-      <aside class="hint-panel"><h3>Field notes</h3>${gameState.hints.length ? `<ul>${gameState.hints.map((id) => `<li>${specimenName(id)} belongs in ${cellName(currentPuzzle.solution[id])}.</li>`).join('')}</ul>` : '<p>No hints revealed.</p>'}<button type="button" class="button secondary" data-action="hint" ${end || hintsLeft.length === 0 ? 'disabled' : ''}>Reveal one position <span>−1 leaf</span></button></aside>
+      <aside class="hint-panel"><h3>Hints</h3>${gameState.hints.length ? `<ul>${gameState.hints.map((id) => `<li>${specimenName(id)} belongs in ${cellName(currentPuzzle.solution[id])}.</li>`).join('')}</ul>` : '<p>No hints revealed.</p>'}<button type="button" class="button secondary" data-action="hint" ${end || hintsLeft.length === 0 ? 'disabled' : ''}>Reveal one position <span>−1 leaf</span></button></aside>
     </div>
     <div class="game-controls"><p id="game-message" role="status">${statusText()}</p><div><button type="button" class="text-button" data-action="clear" ${end ? 'disabled' : ''}>Clear layout</button><button type="button" class="button primary" data-action="check" ${!complete || end ? 'disabled' : ''}>Check layout</button></div></div>
     ${end ? resultMarkup(isDemo) : ''}

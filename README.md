@@ -5,7 +5,7 @@ Solve a four-specimen daily deduction grid. Riddle Grid is for coffee-break play
 The game selects one shared puzzle for each UTC date. All 20 daily layouts have exactly one solution. The bundled sample reaches the same complete solve and explanation flow.
 
 Live site: <https://riddle-grid.sociobot.in>  
-One-click demo: <https://riddle-grid.sociobot.in/demo>
+One-click demo: <https://riddle-grid.sociobot.in/?demo=1>
 
 ## Play
 
@@ -39,7 +39,7 @@ npm run build
 
 ## Deploy
 
-Upload `dist/` to the static host. `staticwebapp.config.json` supplies SPA fallback, the styled 404 response, security headers, and the content security policy. No backend or environment variables are required.
+Upload `dist/` to the static host. `staticwebapp.config.json` supplies route rewrites, the styled 404 response, security headers, and the content security policy. No backend or environment variables are required.
 
 ## Privacy and license
 

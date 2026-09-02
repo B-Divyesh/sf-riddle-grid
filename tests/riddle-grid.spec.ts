@@ -235,8 +235,37 @@ test('404 document carries complete product metadata', async () => {
 test('mobile layout has no horizontal page overflow', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
-  await page.goto('http://127.0.0.1:4173/demo');
+  await page.goto('http://127.0.0.1:4173/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await context.close();
+});
+
+test('390px specimen picker keeps every name intact and labels the hint section', async ({ browser }, testInfo) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/');
+
+  await expect(page.getByRole('heading', { name: 'Hints', exact: true })).toBeVisible();
+  const labels = await page.locator('.quick-specimen > span:last-child').evaluateAll((items) => items.map((item) => {
+    const range = document.createRange();
+    range.selectNodeContents(item);
+    const lines = [...range.getClientRects()].filter(({ width, height }) => width > 0 && height > 0);
+    return {
+      text: item.textContent?.trim(),
+      lines: lines.length,
+      clientWidth: (item as HTMLElement).clientWidth,
+      scrollWidth: (item as HTMLElement).scrollWidth,
+    };
+  }));
+  expect(labels.map(({ text }) => text)).toEqual(['Fern', 'Acorn', 'Berries', 'Seed pod']);
+  for (const label of labels) {
+    expect(label.lines, `${label.text} must stay on one line`).toBe(1);
+    expect(label.scrollWidth, `${label.text} must fit without clipping`).toBeLessThanOrEqual(label.clientWidth);
+  }
+
+  const firstCell = await page.locator('[data-cell="0"]').boundingBox();
+  expect(firstCell!.y + firstCell!.height, 'the picker repair must leave a playable cell in the first phone viewport').toBeLessThanOrEqual(844);
+  await page.screenshot({ path: testInfo.outputPath('root-picker-390x844.png'), fullPage: true });
   await context.close();
 });
 

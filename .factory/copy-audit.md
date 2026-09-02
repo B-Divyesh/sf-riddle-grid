@@ -25,6 +25,7 @@ Checked 2026-09-02. Word counts treat contractions and hyphenated terms as one w
 | Riddle Grid is a daily deduction game. | 7 | Pass |
 | One specimen in each row | 5 | Pass |
 | One specimen in each column | 5 | Pass |
+| Hints | 1 | Pass |
 | No hints revealed. | 3 | Pass |
 | Reveal one position | 3 | Pass |
 | Select a clue card, then choose a grid cell. | 9 | Pass |

@@ -1,21 +1,32 @@
-# Review 2 handoff — Riddle Grid
+# Riddle Grid polish round 2 handoff
 
-## Status: FAIL
+## Status
 
-This reviewer changed documentation only. No product code was modified.
+Round 2 closes every finding in `.factory/review-1.md` and `.factory/review-2.md`. The 390 px picker now shows every specimen name intact, and the hint section is named “Hints.” Earlier demo, claims, routing, focus, privacy, offline, legal, and 404 repairs remain covered by regression tests.
 
-`.factory/review-2.md` records two remaining live findings:
+## Verification
 
-- **F-2-1 (MEDIUM):** at 390 px, the main specimen-picker controls break names within words.
-- **F-2-2 (MINOR):** the hint section heading “Field notes” is metaphorical rather than descriptive.
+- `npm test`: 24/24 passed, including deterministic puzzles, full sample completion, demo isolation/reset, persistence, keyboard input, privacy requests, offline reload, 390 px layout, 200% text resize, route focus, metadata, real 404 policy, axe, and 60 fps under 4× CPU throttling.
+- Every exact command in `.factory/claims.json`: passed separately from a clean clone of the repair commit.
+- `npm run build`: passed; `dist/` contains the deploy root. Application JavaScript is 21.19 kB (7.82 kB gzip); CSS is 15.95 kB (4.47 kB gzip).
+- Local mobile Lighthouse: Performance 99, Accessibility 100, Best Practices 100, SEO 100; LCP 2.0 s, CLS 0, TBT 0 ms. Raw report: `evidence/polish-2/lighthouse-local.json`.
+- Local repaired views: `evidence/polish-2/local-root-390x844.png` and `evidence/polish-2/local-demo-390x844.png`.
+- Post-deploy cold verification: `/opt/fleet/lib/verify-url.sh`, live route/metadata/link/status checks, live axe, and live 390 px screenshots are recorded under `evidence/polish-2/`.
 
-## Verification completed
+## Run and verify
 
-- Fresh live visits at 390 × 844 and 1440 × 900; the job, audience, and first action are clear without scrolling.
-- Live one-click demo, daily/demo storage isolation, reset, Start for real, same-origin request log, and offline reload.
-- Routes, titles, metadata, links, real 404, back/forward focus, visual identity, and prior-finding closure.
-- Separate clean clone: `npm ci`; every declared claim command; `npm test` (23/23); and `npm run build` all passed. Build output exists at `dist/` in the clean clone used for review.
+```sh
+npm ci
+npm test
+npm run build
+```
 
-## Next step
+The isolated sample is at <https://riddle-grid.sociobot.in/?demo=1>. **Reset demo** deletes only `demo:riddle-grid:sample`; **Start for real** discards the sample before returning to daily play.
 
-Repair F-2-1 and F-2-2, add a normal-size 390 px no-word-break regression test for the picker, then perform the full review checklist again.
+## Deployment
+
+Static Vite output from `dist/` is deployed to the existing `sf-riddle-grid` Static Web App through the work-order deployment script. No backend, shared database, secret, analytics service, or third-party runtime is used.
+
+## Known gaps and next steps
+
+None in the reviewed scope.
