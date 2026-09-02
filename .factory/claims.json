@@ -15,10 +15,10 @@
   },
   {
     "id": "sample-complete",
-    "claim": "The fixed sample shows the complete game and reaches a solved result.",
+    "claim": "The sample lets you solve the grid or view its explanation.",
     "where": "demo introduction and README",
     "test": "npm test -- --grep @claim:sample-complete",
-    "sandbox": "fresh browser context at /demo; place the shipped sample solution; assert the solved result and score"
+    "sandbox": "fresh browser context at ?demo=1; solve the shipped sample and assert its result and score; restart, make three incorrect checks, and assert the explanation"
   },
   {
     "id": "demo-isolation",
@@ -85,17 +85,31 @@
   },
   {
     "id": "private-static-game",
-    "claim": "The site uses no analytics, ads, cookies, or third-party scripts.",
-    "where": "privacy page",
+    "claim": "Playing a complete sample sends no data; the site uses no analytics, ads, cookies, or third-party scripts.",
+    "where": "privacy page and demo guide",
     "test": "npm test -- --grep @claim:private-static-game",
-    "sandbox": "fresh browser context at /?demo=1; record requests through a full sample run, assert an empty document.cookie value, only same-origin requests, and no analytics, advertising, sign-in, chat, or submission controls/scripts"
+    "sandbox": "fresh browser context at /?demo=1; record the initial load and a full run with a hint; assert interactions add no requests, every request is an allowlisted static GET with no body or extra query, cookies are empty, and no analytics, ads, or external scripts exist"
   },
   {
     "id": "no-third-party",
-    "claim": "The game sends no personal data and loads no files from other websites.",
+    "claim": "The game loads no files from other websites.",
     "where": "privacy page and README",
     "test": "npm test -- --grep @claim:no-third-party",
-    "sandbox": "fresh browser context at /demo; record requests while revealing a hint and placing a specimen; assert every request is same-origin"
+    "sandbox": "fresh browser context at /demo; record requests through a complete run with a hint; assert every request is an allowlisted same-origin static GET with no request body or query payload"
+  },
+  {
+    "id": "puzzle-choices-local",
+    "claim": "Puzzle choices stay in this browser.",
+    "where": "landing privacy section, privacy page, and README",
+    "test": "npm test -- --grep @claim:puzzle-choices-local",
+    "sandbox": "fresh browser context at /?demo=1; record the complete sample run; assert interactions create no requests, all initial requests match the static allowlist without payloads, and choices are stored under the demo localStorage key"
+  },
+  {
+    "id": "no-account-required",
+    "claim": "The complete game works without an account.",
+    "where": "privacy page heading",
+    "test": "npm test -- --grep @claim:no-account-required",
+    "sandbox": "fresh browser context at /?demo=1; assert no account, sign-in, registration, form, or profile controls exist; complete the sample and reach the result"
   },
   {
     "id": "offline-reload",

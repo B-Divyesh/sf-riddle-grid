@@ -4,11 +4,27 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const base = process.argv[2] ?? 'https://riddle-grid.sociobot.in';
-const evidenceDir = process.argv[3] ?? 'evidence/polish-4';
+const evidenceDir = process.argv[3] ?? 'evidence/polish-5';
 mkdirSync(evidenceDir, { recursive: true });
 
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);
+};
+
+const assertStaticDemoRequests = (requests) => {
+  const expectedOrigin = new URL(base).origin;
+  assert(requests.length > 0, 'privacy audit captured no document request');
+  for (const request of requests) {
+    const url = new URL(request.url);
+    const isEntry = url.pathname === '/' && url.search === '?demo=1';
+    const isStaticFile = /^\/assets\/app-[\w-]+\.(?:js|css)$/.test(url.pathname)
+      || ['/sw.js', '/favicon.svg', '/apple-touch-icon.png'].includes(url.pathname);
+    assert(url.origin === expectedOrigin, `privacy request left the product origin: ${request.url}`);
+    assert(request.method === 'GET', `privacy request was not GET: ${request.method} ${request.url}`);
+    assert(request.body === null, `privacy request carried a body: ${request.url}`);
+    assert(isEntry || (isStaticFile && url.search === ''), `privacy request is outside the static allowlist: ${request.url}`);
+    assert(!(url.username || url.password || url.hash), `privacy request URL carried unexpected data: ${request.url}`);
+  }
 };
 
 const browser = await chromium.launch();
@@ -18,6 +34,7 @@ const report = {
   routes: [],
   links: [],
   demo: {},
+  privacy: {},
   mobile: {},
   offline: {},
   performance: {},
@@ -250,6 +267,49 @@ try {
   assert(resized.specimens.every(({ clientWidth, scrollWidth, right }) => scrollWidth <= clientWidth && right <= 390), `200% text clips a specimen control: ${JSON.stringify(resized.specimens)}`);
   report.mobile = { ...firstScreen, reducedMotion, resized };
   await demoContext.close();
+
+  const privacyContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const privacyPage = await privacyContext.newPage();
+  const privacyRequests = [];
+  privacyPage.on('request', (request) => privacyRequests.push({
+    url: request.url(),
+    method: request.method(),
+    body: request.postData(),
+    resourceType: request.resourceType(),
+  }));
+  await privacyPage.goto(`${base}/?demo=1`, { waitUntil: 'networkidle' });
+  await privacyPage.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+  await privacyPage.waitForLoadState('networkidle');
+  const requestCountBeforePlay = privacyRequests.length;
+  await privacyPage.getByRole('button', { name: /Reveal one position/ }).click();
+  for (const [specimen, cell] of [['fern', 2], ['acorn', 13], ['berry', 11], ['pod', 4]]) {
+    await privacyPage.locator(`[data-specimen="${specimen}"]`).click();
+    await privacyPage.locator(`[data-cell="${cell}"]`).click();
+  }
+  await privacyPage.getByRole('button', { name: 'Check layout' }).click();
+  assert(await privacyPage.getByRole('heading', { name: 'You found the only layout' }).isVisible(), 'privacy run did not complete');
+  await privacyPage.waitForTimeout(100);
+  assert(privacyRequests.length === requestCountBeforePlay, 'game interactions generated a network request');
+  assertStaticDemoRequests(privacyRequests);
+  const cookies = await privacyContext.cookies();
+  assert(cookies.length === 0 && await privacyPage.evaluate(() => document.cookie) === '', 'privacy run created a cookie');
+  assert(await privacyPage.locator('iframe, form, [data-analytics], [data-ad], [class*="ad-" i], [id*="ad-" i]').count() === 0, 'privacy run exposed tracking, advertising, or form markup');
+  assert(await privacyPage.locator('button, a, input, textarea').filter({ hasText: /account|sign in|log in|register|chat|submit clue|send clue/i }).count() === 0, 'privacy run exposed account, chat, or submission controls');
+  const savedDemoState = await privacyPage.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'));
+  assert(savedDemoState && JSON.parse(savedDemoState).phase === 'won', 'completed choices were not retained in demo browser storage');
+  await privacyPage.screenshot({ path: join(evidenceDir, 'live-privacy-complete-390x844.png'), fullPage: true });
+  report.privacy = {
+    completeDemo: true,
+    requests: privacyRequests,
+    allowlistedStaticGetsOnly: true,
+    requestsAddedByPlay: privacyRequests.length - requestCountBeforePlay,
+    requestBodies: privacyRequests.filter(({ body }) => body !== null).length,
+    cookies: cookies.length,
+    analyticsAdsOrForms: 0,
+    accountControls: 0,
+    demoStateStoredLocally: true,
+  };
+  await privacyContext.close();
 
   const offlineContext = await browser.newContext({ serviceWorkers: 'allow' });
   const offlinePage = await offlineContext.newPage();

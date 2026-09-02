@@ -1,1 +1,1 @@
-Solve one daily deduction grid by placing four illustrated specimens.
+Solve a daily 4×4 deduction grid by placing four illustrated specimens.

@@ -101,7 +101,7 @@ function landing(): string {
     </section>
     ${gameMarkup(false)}
     <section class="how" id="how" aria-labelledby="how-title"><h2 id="how-title">How the grid works</h2><ol><li><strong>Read the clue cards.</strong><span>Above and left describe each pair.</span></li><li><strong>Place four specimens.</strong><span>Use each row and column once.</span></li><li><strong>Check the layout.</strong><span>See the solved grid and its explanation.</span></li></ol></section>
-    <section class="privacy-note" aria-labelledby="privacy-title"><div><h2 id="privacy-title">The game stays on your device</h2></div><div><p>Your layout and sound setting use browser storage. The game sends no personal data.</p><a href="/privacy" data-route>Read the privacy details</a></div></section>
+    <section class="privacy-note" aria-labelledby="privacy-title"><div><h2 id="privacy-title">The game stays on your device</h2></div><div><p>Your layout, puzzle choices, and sound setting stay in browser storage.</p><a href="/privacy" data-route>Read the privacy details</a></div></section>
   </main>${footer()}<div class="route-status sr-only" aria-live="polite"></div><div class="online-status" role="status" hidden></div>`;
 }
 
@@ -165,7 +165,7 @@ function resultMarkup(isDemo: boolean): string {
 function infoPage(kind: 'privacy' | 'terms' | '404'): string {
   const content = kind === 'privacy' ? {
     title: 'Privacy without an account', pageTitle: 'Privacy — Riddle Grid',
-    body: `<p>Riddle Grid stores your current layout, completed result, and sound choice in your browser.</p><p>The sample uses separate temporary progress and sound keys. Reset demo and Start for real remove both sample keys.</p><h2>What leaves your device</h2><p>No puzzle choices or personal details leave your device. The site uses no analytics, ads, cookies, or third-party scripts.</p><h2>Remove local data</h2><p>Clear this site’s browser storage to remove saved progress and settings.</p>`,
+    body: `<p>Riddle Grid stores your current layout, completed result, and sound choice in your browser.</p><p>The sample uses separate temporary progress and sound keys. Reset demo and Start for real remove both sample keys.</p><h2>What the site loads</h2><p>Your puzzle choices stay in this browser. Playing a full game sends no data. The site only loads its own static files.</p><p>The site uses no analytics, ads, cookies, or third-party scripts.</p><h2>Remove local data</h2><p>Clear this site’s browser storage to remove saved progress and settings.</p>`,
   } : kind === 'terms' ? {
     title: 'Terms for playing Riddle Grid', pageTitle: 'Terms — Riddle Grid',
     body: `<p>Riddle Grid is a puzzle provided as-is. You may play it for personal use.</p><h2>Fair use</h2><p>Do not disrupt the site or present its puzzles and artwork as your own.</p><h2>Availability</h2><p>The daily puzzle may change or stop without notice.</p>`,

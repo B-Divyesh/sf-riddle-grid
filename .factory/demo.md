@@ -6,4 +6,6 @@
 - Storage namespace: `demo:riddle-grid:sample` for progress and `demo:riddle-grid:muted` for sound. Demo mode never reads or writes daily keys, including `riddle-grid:daily:<UTC date>` and `riddle-grid:muted`.
 - Exit: **Reset demo**, **Start for real**, and any in-app route out of demo remove both demo keys before opening non-demo content.
 
-The demo is bundled into the static app. After the first visit, its shell and sample reload without a network connection.
+The demo ships inside the static app. The initial visit makes only allowlisted GET requests for the page and its own files. Playing sends no requests or payloads. After the first visit, the page and sample reload without a network connection.
+
+`@claim:private-static-game`, `@claim:no-third-party`, and `@claim:puzzle-choices-local` verify the complete sample from a fresh browser context. They reject request bodies, unexpected query data, non-GET methods, analytics endpoints, and files outside the product’s static allowlist.

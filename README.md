@@ -2,7 +2,7 @@
 
 Solve a four-specimen daily deduction grid. Riddle Grid is for coffee-break players who want logic without spelling or obscure vocabulary. A round is designed for a short break.
 
-The game selects one shared puzzle for each UTC date. All 20 daily layouts have exactly one solution. The bundled sample reaches the same complete solve and explanation flow.
+The game selects one shared puzzle for each UTC date. All 20 daily layouts have exactly one solution. The sample lets you solve the grid or view its explanation.
 
 Live site: <https://riddle-grid.sociobot.in>  
 One-click demo: <https://riddle-grid.sociobot.in/?demo=1>
@@ -13,7 +13,7 @@ Read the illustrated clue cards. Place each specimen so every row and column con
 
 Use a pointer or touch to select a specimen and then a cell. With a keyboard, use Enter or Space to select and place. Arrow keys move through the grid. Escape returns a placed specimen to the clue cards.
 
-Progress stays in this browser. The game sends no personal data and loads no files from other websites. It works offline after the first visit.
+Your progress and puzzle choices stay in this browser. The game loads no files from other websites. It works offline after the first visit.
 
 The game runs at 60 frames per second on the 390×844 mid-range phone test profile. The automated check uses 4× CPU throttling.
 

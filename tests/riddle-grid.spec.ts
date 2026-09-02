@@ -2,6 +2,42 @@ import { chromium, expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { puzzleForDate, puzzles, validatePuzzles } from '../src/puzzles';
 
+type RecordedRequest = {
+  url: string;
+  method: string;
+  body: string | null;
+  resourceType: string;
+};
+
+function recordRequests(page: import('@playwright/test').Page): RecordedRequest[] {
+  const requests: RecordedRequest[] = [];
+  page.on('request', (request) => requests.push({
+    url: request.url(),
+    method: request.method(),
+    body: request.postData(),
+    resourceType: request.resourceType(),
+  }));
+  return requests;
+}
+
+function expectOnlyAllowlistedStaticGets(requests: RecordedRequest[], entry: '/demo' | '/?demo=1'): void {
+  expect(requests.length, 'the demo must load at least its HTML document').toBeGreaterThan(0);
+  for (const request of requests) {
+    const url = new URL(request.url);
+    const isEntry = entry === '/demo'
+      ? url.pathname === '/demo' && url.search === ''
+      : url.pathname === '/' && url.search === '?demo=1';
+    const isStaticFile = /^\/assets\/app-[\w-]+\.(?:js|css)$/.test(url.pathname)
+      || ['/sw.js', '/favicon.svg', '/apple-touch-icon.png'].includes(url.pathname);
+
+    expect(url.origin, `unexpected request origin: ${request.url}`).toBe('http://127.0.0.1:4173');
+    expect(request.method, `non-GET request: ${request.url}`).toBe('GET');
+    expect(request.body, `request payload found: ${request.url}`).toBeNull();
+    expect(isEntry || (isStaticFile && url.search === ''), `request is not on the static allowlist: ${request.url}`).toBe(true);
+    expect(url.username || url.password || url.hash, `request URL contains unexpected data: ${request.url}`).toBe('');
+  }
+}
+
 async function solveSample(page: import('@playwright/test').Page) {
   const placements = [
     ['fern', 2],
@@ -54,6 +90,14 @@ test('@claim:sample-complete sample reaches the solved result', async ({ page })
   await solveSample(page);
   await expect(page.getByRole('heading', { name: 'You found the only layout' })).toBeVisible();
   await expect(page.getByText('Score: 4 of 4 leaves.')).toBeVisible();
+  await page.getByRole('button', { name: 'Restart sample' }).click();
+  for (const [specimen, cell] of [['fern', 0], ['acorn', 1], ['berry', 2], ['pod', 3]] as const) {
+    await page.locator(`[data-specimen="${specimen}"]`).click();
+    await page.locator(`[data-cell="${cell}"]`).click();
+  }
+  for (let attempt = 0; attempt < 3; attempt += 1) await page.getByRole('button', { name: 'Check layout' }).click();
+  await expect(page.getByRole('heading', { name: 'Here is the only layout' })).toBeVisible();
+  await expect(page.locator('.solution-list')).toContainText('Fern row 1, column 3');
 });
 
 test('@claim:demo-isolation sample query route isolates progress and sound, then clears both demo keys', async ({ page }) => {
@@ -237,14 +281,14 @@ test('@claim:phone-60fps game sustains the phone frame-rate target', async ({ br
   await context.close();
 });
 
-test('@claim:no-third-party demo sends requests only to this site', async ({ page }) => {
-  const origins = new Set<string>();
-  page.on('request', (request) => origins.add(new URL(request.url()).origin));
-  await page.goto('/demo');
+test('@claim:no-third-party a complete demo loads only allowlisted files from this site', async ({ page }) => {
+  const requests = recordRequests(page);
+  await page.goto('/demo', { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: /Reveal one position/ }).click();
-  await page.locator('[data-specimen="fern"]').click();
-  await page.locator('[data-cell="2"]').click();
-  expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+  await solveSample(page);
+  await expect(page.getByRole('heading', { name: 'You found the only layout' })).toBeVisible();
+  await page.waitForTimeout(100);
+  expectOnlyAllowlistedStaticGets(requests, '/demo');
 });
 
 test('@claim:free-to-play complete sample play has no payment path', async ({ page }) => {
@@ -257,16 +301,58 @@ test('@claim:free-to-play complete sample play has no payment path', async ({ pa
   await expect(page.locator('button, a').filter({ hasText: /pay|purchase|subscribe|checkout|billing/i })).toHaveCount(0);
 });
 
-test('@claim:private-static-game demo has no cookies, tracking, ads, or external scripts', async ({ page }) => {
-  const origins = new Set<string>();
-  page.on('request', (request) => origins.add(new URL(request.url()).origin));
-  await page.goto('/?demo=1');
+test('@claim:private-static-game full demo sends no data and has no cookies, analytics, ads, or external scripts', async ({ page }) => {
+  const requests = recordRequests(page);
+  await page.goto('/?demo=1', { waitUntil: 'networkidle' });
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+  await page.waitForLoadState('networkidle');
+  const requestCountBeforePlay = requests.length;
+  await page.getByRole('button', { name: /Reveal one position/ }).click();
   await solveSample(page);
+  await expect(page.getByRole('heading', { name: 'You found the only layout' })).toBeVisible();
+  await page.waitForTimeout(100);
   expect(await page.evaluate(() => document.cookie)).toBe('');
-  expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+  expect(await page.context().cookies()).toEqual([]);
+  expect(requests, 'hint, placement, checking, and result rendering must make no requests').toHaveLength(requestCountBeforePlay);
+  expectOnlyAllowlistedStaticGets(requests, '/?demo=1');
   expect(await page.locator('script[src]').evaluateAll((scripts) => scripts.every((script) => new URL((script as HTMLScriptElement).src).origin === location.origin))).toBe(true);
   await expect(page.locator('iframe, form, [data-analytics], [data-ad], [class*="ad-" i], [id*="ad-" i]')).toHaveCount(0);
   await expect(page.locator('button, a, input, textarea').filter({ hasText: /sign in|log in|chat|submit clue|send clue/i })).toHaveCount(0);
+});
+
+test('@claim:puzzle-choices-local puzzle choices stay in browser storage and create no requests', async ({ page }) => {
+  const requests = recordRequests(page);
+  await page.goto('/?demo=1', { waitUntil: 'networkidle' });
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+  await page.waitForLoadState('networkidle');
+  const requestCountBeforePlay = requests.length;
+  await page.getByRole('button', { name: /Reveal one position/ }).click();
+  await solveSample(page);
+  await page.waitForTimeout(100);
+
+  expect(requests, 'a complete game must not transmit choices').toHaveLength(requestCountBeforePlay);
+  expectOnlyAllowlistedStaticGets(requests, '/?demo=1');
+  const saved = await page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'));
+  expect(saved).not.toBeNull();
+  expect(JSON.parse(saved!)).toMatchObject({
+    placements: {
+      fern: { row: 0, col: 2 },
+      acorn: { row: 3, col: 1 },
+      berry: { row: 2, col: 3 },
+      pod: { row: 1, col: 0 },
+    },
+    hints: ['fern'],
+    phase: 'won',
+  });
+});
+
+test('@claim:no-account-required complete sample works without an account', async ({ page }) => {
+  await page.goto('/?demo=1');
+  await expect(page.locator('form, input, textarea, select')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /account|sign in|log in|register|create profile/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /account|sign in|log in|register|create profile/i })).toHaveCount(0);
+  await solveSample(page);
+  await expect(page.getByRole('heading', { name: 'You found the only layout' })).toBeVisible();
 });
 
 test('routes, metadata, and accessibility have no Axe violations at any impact', async ({ page }) => {
@@ -325,6 +411,8 @@ test('review 3 copy stays plain and the documented sample name matches the game'
   expect(readme).toContain('A round is designed for a short break.');
   expect(readme).not.toMatch(/3[–-]5 minutes|runtime resources/i);
   expect(readme).toContain('loads no files from other websites');
+  expect(readme).toContain('The sample lets you solve the grid or view its explanation.');
+  expect(readme).not.toMatch(/bundled sample|explanation flow/i);
   expect(demoGuide).toContain('fixed Field sheet 05 sample');
   expect(demoGuide).not.toContain('Rain ledger');
 

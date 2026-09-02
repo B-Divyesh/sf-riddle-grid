@@ -1,6 +1,6 @@
 # Landing-page copy audit
 
-Checked 2026-09-02 during polish round 4. Word counts treat hyphenated terms, dates, and numeric labels as one word. No line exceeds 22 words or uses a banned marketing word.
+Checked 2026-09-02 during polish round 5. Word counts treat hyphenated terms, dates, and numeric labels as one word. No line exceeds 22 words or uses a banned marketing word.
 
 | Copy | Words | Result |
 | --- | ---: | --- |
@@ -49,8 +49,7 @@ Checked 2026-09-02 during polish round 4. Word counts treat hyphenated terms, da
 | Check the layout. | 3 | Pass |
 | See the solved grid and its explanation. | 7 | Pass |
 | The game stays on your device | 6 | Covered by storage and privacy claims |
-| Your layout and sound setting use browser storage. | 8 | Covered by `local-progress` and `sound-setting` |
-| The game sends no personal data. | 6 | Covered by `no-third-party` |
+| Your layout, puzzle choices, and sound setting stay in browser storage. | 11 | Covered by `local-progress`, `puzzle-choices-local`, and `sound-setting` |
 | Read the privacy details | 4 | Pass |
 | Riddle Grid is a daily deduction game. | 7 | Covered by `daily-puzzle` |
 | Terms | 1 | Legal link |
@@ -59,9 +58,23 @@ Checked 2026-09-02 during polish round 4. Word counts treat hyphenated terms, da
 
 The first screen can be read in one breath: solve one short deduction grid; it is for coffee-break logic players; open the ready sample first.
 
+## Privacy-page additions
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| Privacy without an account | 4 | Covered by `no-account-required` |
+| Riddle Grid stores your current layout, completed result, and sound choice in your browser. | 14 | Covered by `local-progress` and `sound-setting` |
+| The sample uses separate temporary progress and sound keys. | 9 | Covered by `demo-isolation` |
+| Reset demo and Start for real remove both sample keys. | 10 | Covered by `demo-isolation` |
+| Your puzzle choices stay in this browser. | 7 | Covered by `puzzle-choices-local` |
+| Playing a full game sends no data. | 7 | Covered by `private-static-game` |
+| The site only loads its own static files. | 8 | Covered by `no-third-party` and `private-static-game` |
+| The site uses no analytics, ads, cookies, or third-party scripts. | 10 | Covered by `private-static-game` |
+| Clear this site’s browser storage to remove saved progress and settings. | 11 | Direct browser instruction |
+
 ## README review
 
-The former untested “3–5 minutes” statement is now “A round is designed for a short break.” The privacy sentence now says “loads no files from other websites.” All README sentences remain at or below 22 words. Quantitative and capability statements map to `.factory/claims.json`.
+The README now says, “The sample lets you solve the grid or view its explanation.” It replaces the vague “bundled sample” and “flow” wording. Its privacy copy says puzzle choices stay in this browser and no files load from other websites. All README sentences remain at or below 22 words. Quantitative and capability statements map to `.factory/claims.json`.
 
 ## Terminology
 
