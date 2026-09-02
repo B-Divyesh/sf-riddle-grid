@@ -1,0 +1,381 @@
+{
+  "base": "https://riddle-grid.sociobot.in",
+  "checkedAt": "2026-09-02T06:19:39.339Z",
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "title": "Riddle Grid — Solve a daily deduction grid",
+      "heading": "Solve one short deduction grid",
+      "axeViolations": 0
+    },
+    {
+      "route": "/?demo=1",
+      "status": 200,
+      "title": "Demo — Riddle Grid",
+      "heading": "Solve the sample deduction grid",
+      "axeViolations": 0
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "title": "Privacy — Riddle Grid",
+      "heading": "Privacy without an account",
+      "axeViolations": 0
+    },
+    {
+      "route": "/terms",
+      "status": 200,
+      "title": "Terms — Riddle Grid",
+      "heading": "Terms for playing Riddle Grid",
+      "axeViolations": 0
+    },
+    {
+      "route": "/missing-polish-5-page",
+      "status": 404,
+      "title": "Page not found — Riddle Grid",
+      "heading": "Page not found",
+      "axeViolations": 0
+    }
+  ],
+  "links": [
+    {
+      "url": "https://riddle-grid.sociobot.in/",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/?demo=1",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/#how",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/privacy",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/terms",
+      "status": 200
+    },
+    {
+      "url": "https://sociobot.in/",
+      "status": 200
+    }
+  ],
+  "demo": {
+    "queryEntry": true,
+    "banner": true,
+    "resetIsolated": true,
+    "headerExitClearsDemo": true,
+    "startForRealClearsDemo": true,
+    "oneLeaf": true,
+    "solved": true,
+    "resultFocused": true,
+    "axeViolations": 0,
+    "requestOrigins": [
+      "https://riddle-grid.sociobot.in"
+    ],
+    "cookies": ""
+  },
+  "privacy": {
+    "completeDemo": true,
+    "explanationAfterThreeChecks": true,
+    "singularCheckCopy": true,
+    "requests": [
+      {
+        "url": "https://riddle-grid.sociobot.in/?demo=1",
+        "method": "GET",
+        "body": null,
+        "resourceType": "document"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/assets/app-C0WVVOee.js",
+        "method": "GET",
+        "body": null,
+        "resourceType": "script"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/assets/app-BM7q80kz.css",
+        "method": "GET",
+        "body": null,
+        "resourceType": "stylesheet"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/sw.js",
+        "method": "GET",
+        "body": null,
+        "resourceType": "script"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/?demo=1&precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/demo?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/privacy?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/terms?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/favicon.svg?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/art/field-desk-640.webp?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/art/field-desk.webp?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/assets/app-C0WVVOee.js?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      },
+      {
+        "url": "https://riddle-grid.sociobot.in/assets/app-BM7q80kz.css?precache=8",
+        "method": "GET",
+        "body": null,
+        "resourceType": "fetch"
+      }
+    ],
+    "allowlistedStaticGetsOnly": true,
+    "requestsAddedByPlay": 0,
+    "requestBodies": 0,
+    "cookies": 0,
+    "analyticsAdsOrForms": 0,
+    "accountControls": 0,
+    "demoStateStoredLocally": true
+  },
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "scrollWidth": 390,
+    "cellBottom": 798.50439453125,
+    "specimenBottom": 623.21875,
+    "undersizedTargets": [],
+    "headerNavigation": [
+      {
+        "label": "Demo",
+        "href": "/?demo=1",
+        "visible": true
+      },
+      {
+        "label": "How it works",
+        "href": "/#how",
+        "visible": true
+      },
+      {
+        "label": "Privacy",
+        "href": "/privacy",
+        "visible": true
+      }
+    ],
+    "reducedMotion": {
+      "animationDuration": "1e-05s",
+      "transitionDuration": "1e-05s"
+    },
+    "resized": {
+      "viewport": 390,
+      "documentScrollWidth": 390,
+      "mainClientWidth": 390,
+      "mainScrollWidth": 390,
+      "navigation": [
+        {
+          "label": "Demo",
+          "clientWidth": 117,
+          "scrollWidth": 117,
+          "right": 132.65625
+        },
+        {
+          "label": "How it works",
+          "clientWidth": 117,
+          "scrollWidth": 117,
+          "right": 253.328125
+        },
+        {
+          "label": "Privacy",
+          "clientWidth": 117,
+          "scrollWidth": 117,
+          "right": 373.984375
+        }
+      ],
+      "specimens": [
+        {
+          "label": "Fern",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        },
+        {
+          "label": "Acorn",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        },
+        {
+          "label": "Berries",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        },
+        {
+          "label": "Seed pod",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        }
+      ]
+    }
+  },
+  "offline": {
+    "worker": "https://riddle-grid.sociobot.in/sw.js",
+    "reload": true
+  },
+  "performance": {
+    "frameSamples": [
+      61.095782420178516,
+      60.02755363117772,
+      59.99803285138467
+    ],
+    "medianFps": 60.02755363117772,
+    "profile": "390x844, DPR 2, 4x CPU throttling"
+  },
+  "headers": {
+    "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+    "referrerPolicy": "strict-origin-when-cross-origin",
+    "contentTypeOptions": "nosniff",
+    "assetCacheControl": "public, max-age=31536000, immutable",
+    "serviceWorkerCacheControl": "no-cache"
+  },
+  "mobileNavigation": [
+    {
+      "route": "/",
+      "links": [
+        {
+          "label": "Demo",
+          "href": "/?demo=1",
+          "width": 116.65625,
+          "height": 44
+        },
+        {
+          "label": "How it works",
+          "href": "/#how",
+          "width": 116.671875,
+          "height": 44
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy",
+          "width": 116.65625,
+          "height": 44
+        }
+      ],
+      "noHorizontalOverflow": true
+    },
+    {
+      "route": "/?demo=1",
+      "links": [
+        {
+          "label": "Demo",
+          "href": "/?demo=1",
+          "width": 116.65625,
+          "height": 44
+        },
+        {
+          "label": "How it works",
+          "href": "/#how",
+          "width": 116.671875,
+          "height": 44
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy",
+          "width": 116.65625,
+          "height": 44
+        }
+      ],
+      "noHorizontalOverflow": true
+    },
+    {
+      "route": "/privacy",
+      "links": [
+        {
+          "label": "Demo",
+          "href": "/?demo=1",
+          "width": 116.65625,
+          "height": 44
+        },
+        {
+          "label": "How it works",
+          "href": "/#how",
+          "width": 116.671875,
+          "height": 44
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy",
+          "width": 116.65625,
+          "height": 44
+        }
+      ],
+      "noHorizontalOverflow": true
+    },
+    {
+      "route": "/terms",
+      "links": [
+        {
+          "label": "Demo",
+          "href": "/?demo=1",
+          "width": 116.65625,
+          "height": 44
+        },
+        {
+          "label": "How it works",
+          "href": "/#how",
+          "width": 116.671875,
+          "height": 44
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy",
+          "width": 116.65625,
+          "height": 44
+        }
+      ],
+      "noHorizontalOverflow": true
+    }
+  ]
+}

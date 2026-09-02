@@ -104,7 +104,7 @@ try {
   await routePage.goForward();
   await routePage.waitForFunction(() => document.activeElement === document.querySelector('h1'));
   const missingPage = await routeContext.newPage();
-  const missingResponse = await missingPage.goto(`${base}/missing-polish-4-page`, { waitUntil: 'networkidle' });
+  const missingResponse = await missingPage.goto(`${base}/missing-polish-5-page`, { waitUntil: 'networkidle' });
   assert(missingResponse?.status() === 404, `missing route returned ${missingResponse?.status()}`);
   assert(await missingPage.title() === 'Page not found — Riddle Grid', '404 title mismatch');
   assert(await missingPage.locator('h1').innerText() === 'Page not found', '404 h1 mismatch');
@@ -113,7 +113,7 @@ try {
   assert(missingAxe.violations.length === 0, `404 has Axe violations: ${missingAxe.violations.map(({ id }) => id).join(', ')}`);
   await missingPage.setViewportSize({ width: 390, height: 844 });
   await missingPage.screenshot({ path: join(evidenceDir, 'live-404-390x844.png'), fullPage: true });
-  report.routes.push({ route: '/missing-polish-4-page', status: 404, title: 'Page not found — Riddle Grid', heading: 'Page not found', axeViolations: 0 });
+  report.routes.push({ route: '/missing-polish-5-page', status: 404, title: 'Page not found — Riddle Grid', heading: 'Page not found', axeViolations: 0 });
   await routeContext.close();
 
   const mobileNavigationContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -309,8 +309,25 @@ try {
   const savedDemoState = await privacyPage.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'));
   assert(savedDemoState && JSON.parse(savedDemoState).phase === 'won', 'completed choices were not retained in demo browser storage');
   await privacyPage.screenshot({ path: join(evidenceDir, 'live-privacy-complete-390x844.png'), fullPage: true });
+  await privacyPage.getByRole('button', { name: 'Restart sample' }).click();
+  for (const [specimen, cell] of [['fern', 0], ['acorn', 1], ['berry', 2], ['pod', 3]]) {
+    await privacyPage.locator(`[data-specimen="${specimen}"]`).click();
+    await privacyPage.locator(`[data-cell="${cell}"]`).click();
+  }
+  await privacyPage.getByRole('button', { name: 'Check layout' }).click();
+  await privacyPage.getByRole('button', { name: 'Check layout' }).click();
+  assert(await privacyPage.locator('#game-message').innerText() === 'That layout did not fit every clue. 1 check left.', 'singular check copy regressed');
+  await privacyPage.locator('.game-controls').screenshot({ path: join(evidenceDir, 'live-one-check-left-390x844.png') });
+  await privacyPage.getByRole('button', { name: 'Check layout' }).click();
+  assert(await privacyPage.getByRole('heading', { name: 'Here is the only layout' }).isVisible(), 'three failed checks did not show the explanation');
+  await privacyPage.locator('.result').screenshot({ path: join(evidenceDir, 'live-explained-demo-390x844.png') });
+  await privacyPage.waitForTimeout(100);
+  assert(privacyRequests.length === requestCountBeforePlay, 'extended game interactions generated a network request');
+  assert((await privacyContext.cookies()).length === 0, 'extended game run created a cookie');
   report.privacy = {
     completeDemo: true,
+    explanationAfterThreeChecks: true,
+    singularCheckCopy: true,
     requests: privacyRequests,
     allowlistedStaticGetsOnly: true,
     requestsAddedByPlay: privacyRequests.length - requestCountBeforePlay,
