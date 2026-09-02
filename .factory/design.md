@@ -4,7 +4,7 @@
 
 Riddle Grid is a **botanical field guide** turned into a deduction table. The page should feel like a useful specimen notebook: warm paper, dark green ink, measured rules, small handwritten-style annotations, and clipped plant studies. It must not resemble a generic game portal or a card-based software landing page. The puzzle is visible on the first screen and remains the visual centre.
 
-The difficulty curve is gentle and finite. Early puzzles expose direct row and neighbour rules; later puzzles combine relative position, column, and exclusion rules. Every puzzle has four illustrated specimens, a 4×4 field grid, and one verified solution. A round is intended to take 3–5 minutes.
+The difficulty curve is gentle and finite. Early puzzles expose direct row and neighbour rules; later puzzles combine relative position, column, and exclusion rules. Every puzzle has four illustrated specimens, a 4×4 field grid, and one verified solution. A round is designed for a short break.
 
 ## Palette
 

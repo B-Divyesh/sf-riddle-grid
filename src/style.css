@@ -46,7 +46,6 @@ h3 { font-size: 1.32rem; }
 .site-header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; }
 .site-header nav a:hover { border-color: currentColor; }
 .sound-button, .demo-banner button { min-height: 44px; padding: 8px 12px; background: transparent; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; }
-.sound-button[aria-pressed="true"] { text-decoration: line-through; }
 
 .demo-banner { display: flex; justify-content: center; align-items: center; gap: 32px; min-height: 48px; padding: 6px 20px; background: var(--ink); color: var(--paper); font-size: .9rem; }
 .demo-actions { display: flex; gap: 8px; }

@@ -23,6 +23,7 @@ const isDemoLocation = (path = window.location.pathname, search = window.locatio
 const blankState = (): GameState => ({ placements: {}, selected: null, hints: [], checks: 0, phase: 'playing' });
 const specimenName = (id: SpecimenId) => specimens.find((item) => item.id === id)!.name;
 const cellName = ({ row, col }: Position) => `row ${row + 1}, column ${col + 1}`;
+const leafCount = (count: number) => `${count} ${count === 1 ? 'leaf' : 'leaves'}`;
 const storageKey = () => demoMode ? 'demo:riddle-grid:sample' : `riddle-grid:daily:${dateKey}`;
 const soundStorageKey = () => demoMode ? 'demo:riddle-grid:muted' : 'riddle-grid:muted';
 
@@ -73,12 +74,13 @@ function icon(id: SpecimenId): string {
 }
 
 function header(): string {
-  return `<a class="skip-link" href="#main">Skip to puzzle</a>
+  const soundAction = isMuted() ? 'Turn sound on' : 'Turn sound off';
+  return `<a class="skip-link" href="#main">Skip to main content</a>
     ${demoMode ? `<aside class="demo-banner" aria-label="Demo mode"><span><strong>Demo</strong> — sample data, nothing is saved to your daily game.</span><span class="demo-actions"><button type="button" data-action="reset-demo">Reset demo</button><button type="button" data-action="start-real">Start for real</button></span></aside>` : ''}
     <header class="site-header">
       <a class="wordmark" href="/" data-route aria-label="Riddle Grid home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M7 7h26v26H7zM20 7v26M7 20h26"/><path d="M12 29c6-2 9-7 10-14 4 4 6 9 5 14-5 3-10 3-15 0Z"/></svg><span>Riddle Grid</span></a>
       <nav aria-label="Main navigation"><a href="/?demo=1" data-route>Demo</a><a href="/#how">How it works</a><a href="/privacy" data-route>Privacy</a></nav>
-      <button class="sound-button" type="button" data-action="toggle-sound" aria-pressed="${isMuted()}">${isMuted() ? 'Sound off' : 'Sound on'}</button>
+      <button class="sound-button" type="button" data-action="toggle-sound">${soundAction}</button>
     </header>`;
 }
 
@@ -127,7 +129,7 @@ function gameMarkup(isDemo: boolean): string {
   const hintsLeft = specimens.filter(({ id }) => !gameState.hints.includes(id));
   const end = gameState.phase !== 'playing';
   return `<section class="game-sheet" id="play" aria-labelledby="game-title" data-testid="game">
-    <div class="sheet-heading"><div><p class="section-number">Field sheet ${currentPuzzle.id} · ${demoMode ? 'sample' : dateKey}</p><h2 id="game-title">${demoMode ? 'Sample deduction grid' : 'Today’s deduction grid'}</h2><p>${currentPuzzle.note}</p></div><div class="leaf-score" aria-label="Maximum score: ${score} leaves">${Array.from({ length: 4 }, (_, index) => `<span class="leaf ${index < score ? '' : 'spent'}">◆</span>`).join('')}<small>${score} leaves</small></div></div>
+    <div class="sheet-heading"><div><p class="section-number">Field sheet ${currentPuzzle.id} · ${demoMode ? 'sample' : dateKey}</p><h2 id="game-title">${demoMode ? 'Sample deduction grid' : 'Today’s deduction grid'}</h2><p>${currentPuzzle.note}</p></div><div class="leaf-score" aria-label="Maximum score: ${leafCount(score)}">${Array.from({ length: 4 }, (_, index) => `<span class="leaf ${index < score ? '' : 'spent'}">◆</span>`).join('')}<small>${leafCount(score)}</small></div></div>
     <div class="field-rules" aria-label="The two field rules"><span><b>Rule 1</b> One specimen in each row</span><span><b>Rule 2</b> One specimen in each column</span></div>
     <div class="game-layout">
       <div class="quick-tray" role="group" aria-label="Quick specimen tray">${specimens.map(({ id }) => `<button type="button" class="quick-specimen ${gameState.selected === id ? 'selected' : ''} ${gameState.placements[id] ? 'placed' : ''}" data-quick-specimen="${id}" aria-pressed="${gameState.selected === id}" aria-label="${specimenName(id)}. ${gameState.placements[id] ? `Placed in ${cellName(gameState.placements[id]!)}.` : 'Not placed.'} Select specimen.">${icon(id)}<span>${specimenName(id)}</span></button>`).join('')}</div>
@@ -136,7 +138,7 @@ function gameMarkup(isDemo: boolean): string {
         const row = Math.floor(index / 4); const col = index % 4; const id = occupiedAt(row, col);
         return `<button type="button" class="grid-cell ${id ? 'filled' : ''}" data-cell="${index}" aria-label="Row ${row + 1}, column ${col + 1}${id ? `, ${specimenName(id)}` : ', empty'}" tabindex="${index === activeCell ? '0' : '-1'}">${id ? `${icon(id)}<span>${specimenName(id)}</span>` : '<span class="cell-dot" aria-hidden="true">·</span>'}</button>`;
       }).join('')}</div></div></div>
-      <aside class="hint-panel"><h3>Hints</h3>${gameState.hints.length ? `<ul>${gameState.hints.map((id) => `<li>${specimenName(id)} belongs in ${cellName(currentPuzzle.solution[id])}.</li>`).join('')}</ul>` : '<p>No hints revealed.</p>'}<button type="button" class="button secondary" data-action="hint" ${end || hintsLeft.length === 0 ? 'disabled' : ''}>Reveal one position <span>−1 leaf</span></button></aside>
+      <section class="hint-panel" aria-labelledby="hints-title"><h3 id="hints-title">Hints</h3>${gameState.hints.length ? `<ul>${gameState.hints.map((id) => `<li>${specimenName(id)} belongs in ${cellName(currentPuzzle.solution[id])}.</li>`).join('')}</ul>` : '<p>No hints revealed.</p>'}<button type="button" class="button secondary" data-action="hint" ${end || hintsLeft.length === 0 ? 'disabled' : ''}>Reveal one position <span>−1 leaf</span></button></section>
     </div>
     <div class="game-controls"><p id="game-message" role="status">${statusText()}</p><div><button type="button" class="text-button" data-action="clear" ${end ? 'disabled' : ''}>Clear layout</button><button type="button" class="button primary" data-action="check" ${!complete || end ? 'disabled' : ''}>Check layout</button></div></div>
     ${end ? resultMarkup(isDemo) : ''}
@@ -168,7 +170,7 @@ function infoPage(kind: 'privacy' | 'terms' | '404'): string {
     title: 'Terms for playing Riddle Grid', pageTitle: 'Terms — Riddle Grid',
     body: `<p>Riddle Grid is a puzzle provided as-is. You may play it for personal use.</p><h2>Fair use</h2><p>Do not disrupt the site or present its puzzles and artwork as your own.</p><h2>Availability</h2><p>The daily puzzle may change or stop without notice.</p>`,
   } : {
-    title: 'This field sheet is missing', pageTitle: 'Page not found — Riddle Grid',
+    title: 'Page not found', pageTitle: 'Page not found — Riddle Grid',
     body: `<p>The address does not match a Riddle Grid page.</p><a class="button primary" href="/" data-route>Return to today’s grid</a>`,
   };
   document.title = content.pageTitle;
@@ -325,10 +327,18 @@ function bindGameEvents(): void {
 }
 
 function bindEvents(): void {
+  document.querySelector<HTMLAnchorElement>('.skip-link')?.addEventListener('click', () => {
+    document.querySelector<HTMLElement>('#page-title')?.focus();
+  });
   document.querySelectorAll<HTMLAnchorElement>('a[data-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); const url = new URL(link.href); navigate(`${url.pathname}${url.search}${url.hash}`); }));
   document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', () => { clearDemoStorage(); gameState = blankState(); render('/demo'); document.querySelector<HTMLElement>('#page-title')?.focus(); });
   document.querySelector('[data-action="start-real"]')?.addEventListener('click', () => { clearDemoStorage(); navigate('/'); });
-  document.querySelector('[data-action="toggle-sound"]')?.addEventListener('click', (event) => { const button = event.currentTarget as HTMLButtonElement; const next = button.getAttribute('aria-pressed') !== 'true'; setMuted(next); button.setAttribute('aria-pressed', String(next)); button.textContent = next ? 'Sound off' : 'Sound on'; });
+  document.querySelector('[data-action="toggle-sound"]')?.addEventListener('click', (event) => {
+    const button = event.currentTarget as HTMLButtonElement;
+    const next = !isMuted();
+    setMuted(next);
+    button.textContent = next ? 'Turn sound on' : 'Turn sound off';
+  });
   bindGameEvents();
 }
 

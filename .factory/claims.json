@@ -39,7 +39,7 @@
     "claim": "A hint reveals one exact position and costs one score leaf.",
     "where": "game hint action and README",
     "test": "npm test -- --grep @claim:hint-cost",
-    "sandbox": "fresh browser context at /demo; reveal one hint; assert an exact position appears and score falls from four to three leaves"
+    "sandbox": "fresh browser context at /demo; reveal all four hints; assert an exact position appears and score labels use 4, 3, 2, 1 leaf, then 0 leaves"
   },
   {
     "id": "failed-checks",
@@ -92,7 +92,7 @@
   },
   {
     "id": "no-third-party",
-    "claim": "The game sends no personal data and loads no third-party runtime resources.",
+    "claim": "The game sends no personal data and loads no files from other websites.",
     "where": "privacy page and README",
     "test": "npm test -- --grep @claim:no-third-party",
     "sandbox": "fresh browser context at /demo; record requests while revealing a hint and placing a specimen; assert every request is same-origin"

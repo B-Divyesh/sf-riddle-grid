@@ -67,9 +67,10 @@ test('@claim:demo-isolation sample query route isolates progress and sound, then
   });
   await page.goto('/?demo=1');
   await expect(page.getByLabel('Demo mode')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Sound on' })).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByRole('button', { name: 'Turn sound off' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBeNull();
-  await page.getByRole('button', { name: 'Sound on' }).click();
+  await page.getByRole('button', { name: 'Turn sound off' }).click();
+  await expect(page.getByRole('button', { name: 'Turn sound on' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBe('true');
   expect(await page.evaluate((key) => localStorage.getItem(key), daily.key)).toBe(daily.progress);
   expect(await page.evaluate(() => localStorage.getItem('riddle-grid:muted'))).toBe('true');
@@ -81,12 +82,12 @@ test('@claim:demo-isolation sample query route isolates progress and sound, then
   expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBeNull();
   expect(await page.evaluate((key) => localStorage.getItem(key), daily.key)).toBe(daily.progress);
   expect(await page.evaluate(() => localStorage.getItem('riddle-grid:muted'))).toBe('true');
-  await expect(page.getByRole('button', { name: 'Sound on' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Turn sound off' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Sound on' }).click();
+  await page.getByRole('button', { name: 'Turn sound off' }).click();
   await page.getByRole('button', { name: 'Start for real' }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole('button', { name: 'Sound off' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Turn sound on' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'))).toBeNull();
   expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBeNull();
   expect(await page.evaluate((key) => localStorage.getItem(key), daily.key)).toBe(daily.progress);
@@ -101,11 +102,17 @@ test('@claim:restart-reset restarting the sample clears its layout', async ({ pa
   await expect(page.getByText('Select a clue card, then choose a grid cell.')).toBeVisible();
 });
 
-test('@claim:hint-cost a hint reveals one position and spends one leaf', async ({ page }) => {
+test('@claim:hint-cost hints reveal positions and use correct leaf grammar at every score', async ({ page }) => {
   await page.goto('/demo');
-  await page.getByRole('button', { name: /Reveal one position/ }).click();
+  const hint = page.getByRole('button', { name: /Reveal one position/ });
+  for (const label of ['4 leaves', '3 leaves', '2 leaves', '1 leaf', '0 leaves']) {
+    await expect(page.getByText(label, { exact: true })).toBeVisible();
+    await expect(page.locator('.leaf-score')).toHaveAttribute('aria-label', `Maximum score: ${label}`);
+    if (label !== '0 leaves') await hint.click();
+  }
   await expect(page.getByText('Fern belongs in row 1, column 3.', { exact: true })).toBeVisible();
-  await expect(page.getByText('3 leaves', { exact: true })).toBeVisible();
+  await expect(hint).toBeDisabled();
+  await expect(page.getByText('1 leaves', { exact: true })).toHaveCount(0);
 });
 
 test('@claim:failed-checks three incorrect checks open the explanation', async ({ page }) => {
@@ -120,9 +127,10 @@ test('@claim:failed-checks three incorrect checks open the explanation', async (
 
 test('@claim:sound-setting sound choice persists in this browser', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Sound on' }).click();
+  await page.getByRole('button', { name: 'Turn sound off' }).click();
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Sound off' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Turn sound on' })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('riddle-grid:muted'))).toBe('true');
 });
 
 test('@claim:local-progress progress stays in this browser', async ({ page }) => {
@@ -249,7 +257,7 @@ test('@claim:private-static-game demo has no cookies, tracking, ads, or external
   await expect(page.locator('button, a, input, textarea').filter({ hasText: /sign in|log in|chat|submit clue|send clue/i })).toHaveCount(0);
 });
 
-test('routes, metadata, and accessibility have no serious violations', async ({ page }) => {
+test('routes, metadata, and accessibility have no Axe violations at any impact', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   for (const path of ['/', '/demo', '/privacy', '/terms', '/missing-page']) {
@@ -259,26 +267,60 @@ test('routes, metadata, and accessibility have no serious violations', async ({ 
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page).toHaveTitle(/Riddle Grid/);
     const results = await new AxeBuilder({ page }).analyze();
-    expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
+    expect(results.violations, `${path} must have no Axe violations`).toEqual([]);
   }
   expect(consoleErrors).toEqual([]);
 });
 
-test('routes set plain titles, descriptions, and canonical URLs', async ({ page }) => {
+test('routes set plain titles, complete metadata, legal links, and useful route copy', async ({ page }) => {
   const expected = [
-    ['/', 'Riddle Grid — Solve a daily deduction grid', 'https://riddle-grid.sociobot.in/'],
-    ['/?demo=1', 'Demo — Riddle Grid', 'https://riddle-grid.sociobot.in/demo'],
-    ['/privacy', 'Privacy — Riddle Grid', 'https://riddle-grid.sociobot.in/privacy'],
-    ['/terms', 'Terms — Riddle Grid', 'https://riddle-grid.sociobot.in/terms'],
-    ['/missing-page', 'Page not found — Riddle Grid', 'https://riddle-grid.sociobot.in/404'],
+    ['/', 'Riddle Grid — Solve a daily deduction grid', 'https://riddle-grid.sociobot.in/', 'Solve one short deduction grid'],
+    ['/?demo=1', 'Demo — Riddle Grid', 'https://riddle-grid.sociobot.in/demo', 'Solve the sample deduction grid'],
+    ['/privacy', 'Privacy — Riddle Grid', 'https://riddle-grid.sociobot.in/privacy', 'Privacy without an account'],
+    ['/terms', 'Terms — Riddle Grid', 'https://riddle-grid.sociobot.in/terms', 'Terms for playing Riddle Grid'],
+    ['/missing-page', 'Page not found — Riddle Grid', 'https://riddle-grid.sociobot.in/404', 'Page not found'],
   ] as const;
-  for (const [path, title, canonical] of expected) {
+  for (const [path, title, canonical, heading] of expected) {
     await page.goto(path);
     await expect(page).toHaveTitle(title);
+    await expect(page.getByRole('heading', { level: 1, name: heading, exact: true })).toBeVisible();
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Riddle Grid|deduction grid|terms/i);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical);
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', title);
+    await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content', /.+/);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://riddle-grid.sociobot.in/art/social.webp');
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+    await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', title);
+    await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute('content', /.+/);
+    await expect(page.locator('.skip-link')).toHaveText('Skip to main content');
+    await expect(page.locator('footer a[href="/privacy"]')).toHaveText('Privacy');
+    await expect(page.locator('footer a[href="/terms"]')).toHaveText('Terms');
   }
+});
+
+test('skip link focuses the main route heading', async ({ page }) => {
+  await page.goto('/privacy');
+  const skipLink = page.getByRole('link', { name: 'Skip to main content' });
+  await skipLink.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { level: 1, name: 'Privacy without an account' })).toBeFocused();
+});
+
+test('review 3 copy stays plain and the documented sample name matches the game', async ({ page }) => {
+  const { readFileSync } = await import('node:fs');
+  const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+  const demoGuide = readFileSync(new URL('../.factory/demo.md', import.meta.url), 'utf8');
+  expect(readme).toContain('A round is designed for a short break.');
+  expect(readme).not.toMatch(/3[–-]5 minutes|runtime resources/i);
+  expect(readme).toContain('loads no files from other websites');
+  expect(demoGuide).toContain('fixed Field sheet 05 sample');
+  expect(demoGuide).not.toContain('Rain ledger');
+
+  await page.goto('/?demo=1');
+  await expect(page.locator('.section-number')).toHaveText('Field sheet 05 · sample');
+  await expect(page.getByRole('button', { name: 'Turn sound off' })).toBeVisible();
+  await page.getByRole('button', { name: 'Turn sound off' }).click();
+  await expect(page.getByRole('button', { name: 'Turn sound on' })).toBeVisible();
 });
 
 test('Back and Forward focus and announce the new route heading', async ({ page }) => {
@@ -418,7 +460,7 @@ test('cold root capture contains plain copy and an operable game at required vie
     expect(specimenBox!.y + specimenBox!.height, 'a specimen control must be fully visible').toBeLessThanOrEqual(viewport.height);
     await page.screenshot({ path: testInfo.outputPath(`cold-root-${viewport.width}x${viewport.height}.png`) });
     const accessibility = await new AxeBuilder({ page }).analyze();
-    expect(accessibility.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
+    expect(accessibility.violations, `${viewport.name} cold root must have no Axe violations`).toEqual([]);
 
     await specimen.click();
     await page.locator('[data-cell="2"]').click();
