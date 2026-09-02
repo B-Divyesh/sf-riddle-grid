@@ -12,7 +12,7 @@ Release is blocked by three accessibility defects:
 2. The mobile home/footer link hit areas are only 20.6–36 px tall; the requirement is at least 44 px.
 3. At 390 px with text resized to 200%, all four quick specimen labels overflow their controls and Seed pod is clipped beyond the viewport.
 
-No product code was changed. This verification added the current report and updated this handoff only.
+No product code was changed. This verification added the current report and updated this handoff only. The builder's earlier polish report and visual evidence remain in `.factory/polish-1.md` and `.factory/evidence/live/`.
 
 ## Reproduce
 
