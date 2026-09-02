@@ -85,6 +85,18 @@ test('@claim:demo-isolation sample query route isolates progress and sound, then
   await expect(page.getByRole('button', { name: 'Turn sound off' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Turn sound off' }).click();
+  await page.locator('[data-specimen="fern"]').click();
+  await page.locator('[data-cell="2"]').click();
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'How it works', exact: true }).click();
+  await expect(page).toHaveURL(/\/#how$/);
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBeNull();
+  expect(await page.evaluate((key) => localStorage.getItem(key), daily.key)).toBe(daily.progress);
+  expect(await page.evaluate(() => localStorage.getItem('riddle-grid:muted'))).toBe('true');
+
+  await page.goto('/?demo=1');
+  await expect(page.getByRole('button', { name: 'Turn sound off' })).toBeVisible();
+  await page.getByRole('button', { name: 'Turn sound off' }).click();
   await page.getByRole('button', { name: 'Start for real' }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('button', { name: 'Turn sound on' })).toBeVisible();
@@ -349,6 +361,42 @@ test('mobile layout has no horizontal page overflow', async ({ browser }) => {
   await context.close();
 });
 
+test('390px header keeps Demo, How it works, and Privacy reachable on every route', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  const routes = ['/', '/?demo=1', '/privacy', '/terms'];
+
+  for (const route of routes) {
+    await page.goto(`http://127.0.0.1:4173${route}`);
+    const navigation = page.getByRole('navigation', { name: 'Main navigation' });
+    await expect(navigation).toBeVisible();
+    for (const [name, href] of [['Demo', '/?demo=1'], ['How it works', '/#how'], ['Privacy', '/privacy']] as const) {
+      const link = navigation.getByRole('link', { name, exact: true });
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute('href', href);
+      const box = await link.boundingBox();
+      expect(box, `${name} needs a visible target on ${route}`).not.toBeNull();
+      expect(box!.width, `${name} needs a 44px-wide target on ${route}`).toBeGreaterThanOrEqual(44);
+      expect(box!.height, `${name} needs a 44px-tall target on ${route}`).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `${route} must not overflow at 390px`).toBe(true);
+  }
+
+  await page.goto('http://127.0.0.1:4173/terms');
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Demo', exact: true }).click();
+  await expect(page).toHaveURL(/\?demo=1$/);
+  await expect(page.getByLabel('Demo mode')).toBeVisible();
+
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'How it works', exact: true }).click();
+  await expect(page).toHaveURL(/\/#how$/);
+  await expect(page.getByRole('heading', { name: 'How the grid works', exact: true })).toBeVisible();
+
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Privacy', exact: true }).click();
+  await expect(page).toHaveURL(/\/privacy$/);
+  await expect(page.getByRole('heading', { name: 'Privacy without an account', exact: true })).toBeFocused();
+  await context.close();
+});
+
 test('390px specimen picker keeps every name intact and labels the hint section', async ({ browser }, testInfo) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
@@ -408,11 +456,11 @@ test('accessibility regressions: focus, mobile targets, and 200% specimen labels
     expect(ratio).toBeGreaterThanOrEqual(3);
   }
 
-  const mobileTargets = await page.locator('.wordmark, footer a').evaluateAll((links) => links.map((link) => {
+  const mobileTargets = await page.locator('.wordmark, .site-header nav a, footer a').evaluateAll((links) => links.map((link) => {
     const { width, height } = link.getBoundingClientRect();
     return { text: link.textContent?.trim(), width, height };
   }));
-  expect(mobileTargets).toHaveLength(4);
+  expect(mobileTargets).toHaveLength(7);
   for (const target of mobileTargets) {
     expect(target.width, `${target.text} needs a 44px-wide target`).toBeGreaterThanOrEqual(44);
     expect(target.height, `${target.text} needs a 44px-tall target`).toBeGreaterThanOrEqual(44);
@@ -421,14 +469,25 @@ test('accessibility regressions: focus, mobile targets, and 200% specimen labels
   await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
   const textResize = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
+    documentScrollWidth: document.documentElement.scrollWidth,
     mainClientWidth: document.querySelector('main')!.clientWidth,
     mainScrollWidth: document.querySelector('main')!.scrollWidth,
+    navigation: [...document.querySelectorAll<HTMLElement>('.site-header nav a')].map((link) => {
+      const box = link.getBoundingClientRect();
+      return { label: link.textContent?.trim(), clientWidth: link.clientWidth, scrollWidth: link.scrollWidth, right: box.right };
+    }),
     specimens: [...document.querySelectorAll<HTMLElement>('.quick-specimen')].map((specimen) => {
       const box = specimen.getBoundingClientRect();
       return { label: specimen.textContent?.trim(), clientWidth: specimen.clientWidth, scrollWidth: specimen.scrollWidth, right: box.right };
     }),
   }));
+  expect(textResize.documentScrollWidth).toBeLessThanOrEqual(textResize.viewport);
   expect(textResize.mainScrollWidth).toBeLessThanOrEqual(textResize.mainClientWidth);
+  expect(textResize.navigation.map(({ label }) => label)).toEqual(['Demo', 'How it works', 'Privacy']);
+  for (const link of textResize.navigation) {
+    expect(link.scrollWidth, `${link.label} must not be clipped at 200% text`).toBeLessThanOrEqual(link.clientWidth);
+    expect(link.right, `${link.label} must remain inside the viewport at 200% text`).toBeLessThanOrEqual(textResize.viewport);
+  }
   expect(textResize.specimens.map(({ label }) => label)).toEqual(['Fern', 'Acorn', 'Berries', 'Seed pod']);
   for (const specimen of textResize.specimens) {
     expect(specimen.scrollWidth, `${specimen.label} must not be clipped at 200% text`).toBeLessThanOrEqual(specimen.clientWidth);

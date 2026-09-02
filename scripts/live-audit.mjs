@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const base = process.argv[2] ?? 'https://riddle-grid.sociobot.in';
-const evidenceDir = process.argv[3] ?? 'evidence/polish-3';
+const evidenceDir = process.argv[3] ?? 'evidence/polish-4';
 mkdirSync(evidenceDir, { recursive: true });
 
 const assert = (condition, message) => {
@@ -48,6 +48,11 @@ try {
     assert(await routePage.locator('main').count() === 1, `${route} needs one main`);
     assert(await routePage.locator('h1').innerText() === heading, `${route} h1 mismatch`);
     assert(await routePage.locator('.skip-link').innerText() === 'Skip to main content', `${route} skip label mismatch`);
+    for (const [name, href] of [['Demo', '/?demo=1'], ['How it works', '/#how'], ['Privacy', '/privacy']]) {
+      const link = routePage.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name, exact: true });
+      assert(await link.isVisible(), `${route} header ${name} link is hidden`);
+      assert(await link.getAttribute('href') === href, `${route} header ${name} link has the wrong target`);
+    }
     assert(await routePage.locator('footer a[href="/privacy"]').count() === 1, `${route} lacks Privacy link`);
     assert(await routePage.locator('footer a[href="/terms"]').count() === 1, `${route} lacks Terms link`);
     const axe = await new AxeBuilder({ page: routePage }).analyze();
@@ -71,7 +76,7 @@ try {
   await routePage.goForward();
   await routePage.waitForFunction(() => document.activeElement === document.querySelector('h1'));
   const missingPage = await routeContext.newPage();
-  const missingResponse = await missingPage.goto(`${base}/missing-polish-3-page`, { waitUntil: 'networkidle' });
+  const missingResponse = await missingPage.goto(`${base}/missing-polish-4-page`, { waitUntil: 'networkidle' });
   assert(missingResponse?.status() === 404, `missing route returned ${missingResponse?.status()}`);
   assert(await missingPage.title() === 'Page not found — Riddle Grid', '404 title mismatch');
   assert(await missingPage.locator('h1').innerText() === 'Page not found', '404 h1 mismatch');
@@ -82,6 +87,27 @@ try {
   await missingPage.screenshot({ path: join(evidenceDir, 'live-404-390x844.png'), fullPage: true });
   report.routes.push({ route: '/missing-polish-3-page', status: 404, title: 'Page not found — Riddle Grid', heading: 'Page not found', axeViolations: 0 });
   await routeContext.close();
+
+  const mobileNavigationContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const mobileNavigationPage = await mobileNavigationContext.newPage();
+  const mobileRoutes = [];
+  for (const [route] of routes) {
+    await mobileNavigationPage.goto(`${base}${route}`, { waitUntil: 'networkidle' });
+    const links = await mobileNavigationPage.locator('.site-header nav a').evaluateAll((nodes) => nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { label: node.textContent?.trim(), href: node.getAttribute('href'), width: box.width, height: box.height };
+    }));
+    assert(JSON.stringify(links.map(({ label, href }) => [label, href])) === JSON.stringify([
+      ['Demo', '/?demo=1'], ['How it works', '/#how'], ['Privacy', '/privacy'],
+    ]), `${route} has incorrect mobile header links: ${JSON.stringify(links)}`);
+    assert(links.every(({ width, height }) => width >= 44 && height >= 44), `${route} has an undersized mobile header link: ${JSON.stringify(links)}`);
+    assert(await mobileNavigationPage.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `${route} overflows at 390px`);
+    const routeName = route === '/' ? 'root' : route.includes('demo') ? 'demo' : route.slice(1);
+    await mobileNavigationPage.screenshot({ path: join(evidenceDir, `live-header-${routeName}-390x844.png`), fullPage: false });
+    mobileRoutes.push({ route, links, noHorizontalOverflow: true });
+  }
+  report.mobileNavigation = mobileRoutes;
+  await mobileNavigationContext.close();
 
   const demoContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const demoPage = await demoContext.newPage();
@@ -146,6 +172,7 @@ try {
   report.demo = { queryEntry: true, banner: true, resetIsolated: true, startForRealClearsDemo: true, oneLeaf: true, solved: true, resultFocused: true, axeViolations: 0, requestOrigins: [...requestOrigins], cookies: '' };
 
   await demoPage.goto(`${base}/?mobile=1`);
+  await demoPage.screenshot({ path: join(evidenceDir, 'live-root-390x844.png'), fullPage: true });
   const firstScreen = await demoPage.evaluate(() => {
     const cell = document.querySelector('[data-cell="0"]')?.getBoundingClientRect();
     const specimen = document.querySelector('[data-quick-specimen="fern"]')?.getBoundingClientRect();
@@ -163,12 +190,18 @@ try {
       cellBottom: cell ? cell.bottom : null,
       specimenBottom: specimen ? specimen.bottom : null,
       undersizedTargets: targets.filter(({ width, height }) => width < 44 || height < 44),
+      headerNavigation: [...document.querySelectorAll('.site-header nav a')].map((node) => ({
+        label: node.textContent?.trim(),
+        href: node.getAttribute('href'),
+        visible: getComputedStyle(node).display !== 'none' && node.getBoundingClientRect().width >= 44 && node.getBoundingClientRect().height >= 44,
+      })),
     };
   });
   assert(firstScreen.scrollWidth <= 390, 'mobile page overflows horizontally');
   assert(firstScreen.cellBottom !== null && firstScreen.cellBottom <= 844, 'first cell is outside the phone viewport');
   assert(firstScreen.specimenBottom !== null && firstScreen.specimenBottom <= 844, 'specimen control is outside the phone viewport');
   assert(firstScreen.undersizedTargets.length === 0, `undersized targets: ${JSON.stringify(firstScreen.undersizedTargets)}`);
+  assert(firstScreen.headerNavigation.length === 3 && firstScreen.headerNavigation.every(({ visible }) => visible), `mobile header navigation is unavailable: ${JSON.stringify(firstScreen.headerNavigation)}`);
   await demoPage.emulateMedia({ reducedMotion: 'reduce' });
   const reducedMotion = await demoPage.locator('.quick-specimen').first().evaluate((node) => {
     const style = getComputedStyle(node);

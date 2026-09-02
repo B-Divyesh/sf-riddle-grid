@@ -43,7 +43,7 @@ h3 { font-size: 1.32rem; }
 .wordmark svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-width: 1.5; }
 .wordmark svg path:last-child { fill: var(--fern); stroke: var(--fern); }
 .site-header nav, footer nav { display: flex; align-items: center; gap: 24px; }
-.site-header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; }
+.site-header nav a { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; }
 .site-header nav a:hover { border-color: currentColor; }
 .sound-button, .demo-banner button { min-height: 44px; padding: 8px 12px; background: transparent; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; }
 
@@ -146,7 +146,7 @@ main { min-width: 0; }
 .demo-intro h1 { max-width: 12ch; font-size: clamp(2.6rem, 6vw, 5rem); }
 .demo-intro > p:last-child { max-width: 54ch; }
 .demo-intro + .game-sheet { margin-bottom: 96px; }
-.text-page { min-height: 68vh; position: relative; max-width: 780px; margin: 0 auto; padding: clamp(72px, 10vw, 136px) 24px; }
+.text-page { min-height: 68vh; position: relative; max-width: 780px; margin: 0 auto; padding: clamp(72px, 10vw, 136px) 24px; overflow: hidden; }
 .text-page h1 { max-width: 12ch; }
 .text-page h2 { margin-top: 48px; font-size: 1.8rem; }
 .text-page > p, .text-page > h2, .text-page > a { max-width: 62ch; position: relative; z-index: 1; }
@@ -174,8 +174,11 @@ footer a { display: inline-flex; align-items: center; justify-content: center; m
 }
 
 @media (max-width: 700px) {
-  .site-header { grid-template-columns: 1fr auto; gap: 12px; min-height: 64px; padding: 10px 16px; }
-  .site-header nav { display: none; }
+  .site-header { grid-template: "wordmark sound" auto "navigation navigation" auto / 1fr auto; gap: 4px 12px; min-height: 108px; padding: 8px 16px; }
+  .wordmark { grid-area: wordmark; }
+  .site-header nav { grid-area: navigation; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; border-top: 1px solid color-mix(in srgb, var(--ink), transparent 76%); }
+  .site-header nav a { padding: 7px 4px 3px; font-size: .9rem; line-height: 1.15; }
+  .sound-button { grid-area: sound; }
   .sound-button { font-size: .82rem; }
   .demo-banner { justify-content: space-between; gap: 12px; align-items: start; font-size: .8rem; }
   .demo-actions { flex-direction: column; }

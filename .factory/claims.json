@@ -25,7 +25,7 @@
     "claim": "The sample opens at ?demo=1 and saves progress and sound separately from daily play.",
     "where": "landing action, demo banner, README, and demo guide",
     "test": "npm test -- --grep @claim:demo-isolation",
-    "sandbox": "fresh browser context; seed daily progress and sound, open /?demo=1, assert demo starts with its own sound setting, change it, then reset and exit while asserting only demo progress and sound keys are removed"
+    "sandbox": "fresh browser context; seed daily progress and sound, open /?demo=1, assert separate demo settings, then reset, leave through How it works, and Start for real while asserting only demo keys are removed"
   },
   {
     "id": "restart-reset",

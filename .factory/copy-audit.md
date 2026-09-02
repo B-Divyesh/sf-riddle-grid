@@ -1,6 +1,6 @@
 # Landing-page copy audit
 
-Checked 2026-09-02 after polish round 3. Word counts treat hyphenated terms, dates, and numeric labels as one word. No line exceeds 22 words or uses a banned marketing word.
+Checked 2026-09-02 during polish round 4. Word counts treat hyphenated terms, dates, and numeric labels as one word. No line exceeds 22 words or uses a banned marketing word.
 
 | Copy | Words | Result |
 | --- | ---: | --- |

@@ -79,7 +79,7 @@ function header(): string {
     ${demoMode ? `<aside class="demo-banner" aria-label="Demo mode"><span><strong>Demo</strong> — sample data, nothing is saved to your daily game.</span><span class="demo-actions"><button type="button" data-action="reset-demo">Reset demo</button><button type="button" data-action="start-real">Start for real</button></span></aside>` : ''}
     <header class="site-header">
       <a class="wordmark" href="/" data-route aria-label="Riddle Grid home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M7 7h26v26H7zM20 7v26M7 20h26"/><path d="M12 29c6-2 9-7 10-14 4 4 6 9 5 14-5 3-10 3-15 0Z"/></svg><span>Riddle Grid</span></a>
-      <nav aria-label="Main navigation"><a href="/?demo=1" data-route>Demo</a><a href="/#how">How it works</a><a href="/privacy" data-route>Privacy</a></nav>
+      <nav aria-label="Main navigation"><a href="/?demo=1" data-route>Demo</a><a href="/#how" ${demoMode ? 'data-exit-demo' : ''}>How it works</a><a href="/privacy" data-route>Privacy</a></nav>
       <button class="sound-button" type="button" data-action="toggle-sound">${soundAction}</button>
     </header>`;
 }
@@ -330,6 +330,7 @@ function bindEvents(): void {
   document.querySelector<HTMLAnchorElement>('.skip-link')?.addEventListener('click', () => {
     document.querySelector<HTMLElement>('#page-title')?.focus();
   });
+  document.querySelector('[data-exit-demo]')?.addEventListener('click', clearDemoStorage);
   document.querySelectorAll<HTMLAnchorElement>('a[data-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); const url = new URL(link.href); navigate(`${url.pathname}${url.search}${url.hash}`); }));
   document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', () => { clearDemoStorage(); gameState = blankState(); render('/demo'); document.querySelector<HTMLElement>('#page-title')?.focus(); });
   document.querySelector('[data-action="start-real"]')?.addEventListener('click', () => { clearDemoStorage(); navigate('/'); });
