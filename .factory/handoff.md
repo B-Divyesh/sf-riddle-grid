@@ -1,37 +1,54 @@
-# Riddle Grid independent verification 5 handoff
+# Riddle Grid repair 3 handoff
 
 ## Status
 
-**FAIL** for candidate `13e60e6e8ba114940cb09f730b5c0ea88589cb5f` at <https://riddle-grid.sociobot.in>, verified 2026-09-02 UTC.
+The release blockers from independent verification 5 of candidate `13e60e6e8ba114940cb09f730b5c0ea88589cb5f` are repaired locally. This is still the same static Vite + TypeScript browser game; it has no backend, accounts, payments, tracking, or third-party runtime resources.
 
-The live runtime exactly matches the candidate build, all 15 declared claim commands pass, the full suite passes 24/24, and the deterministic game reaches both its win and three-miss explanation screens. Release acceptance is blocked by demo-storage isolation and accessibility contract failures. Full evidence is in `.factory/verification-5.md`.
+## Reproduced first
 
-## Release-blocking defects
+Before changing code, the exact demo-sound leak was reproduced against the candidate build:
 
-1. Demo mode reads and writes the real `riddle-grid:muted` setting. Reset demo does not restore or delete the demo-made setting, and Start for real carries it into daily play.
-2. At 390px, **Read the privacy details** measures 193.8×19 px instead of the required minimum 44px height.
-3. Clue relation text renders at 13.33px and hint text at 14.4px despite the documented 16px body-text floor.
-4. Completing a keyboard-only run drops focus to `<body>` because `#result-title` cannot receive the attempted focus.
+```json
+{"realOff":"true","demoInitiallyOff":1,"realAfterReset":"false"}
+```
 
-Low-severity copy/docs findings: **“1 checks left”** is ungrammatical, and README omits the documented 3–5 minute round length.
+The daily sound key was set to `true`; demo incorrectly opened as **Sound off**; changing sound in demo and using **Reset demo** altered the real setting instead of removing isolated demo state.
 
-## Verification summary
+## Repairs
+
+- Sound now uses `demo:riddle-grid:muted` in demo and `riddle-grid:muted` in daily play. Demo never reads or writes the daily key.
+- **Reset demo**, **Start for real**, and every in-app route out of demo remove both `demo:riddle-grid:sample` and `demo:riddle-grid:muted`.
+- The privacy link is an inline 44px minimum touch target at 390px.
+- Clue relations and hint copy render at 16px minimum. Desktop fact lines compact into one row so the playable slice remains in the first 1440×900 viewport.
+- The result heading has `tabindex="-1"`; keyboard completion moves focus there instead of `<body>`.
+- Failed-check copy now says **“1 check left.”**
+- README now states that a round is intended to take 3–5 minutes. Demo documentation and the isolation claim name both isolated keys and cleanup behavior.
+- The service worker cache is versioned as `riddle-grid-v6`; the offline claim calls `registration.update()` before its offline reload.
+
+## Regression coverage
+
+`@claim:demo-isolation` now seeds daily progress and daily sound, proves demo starts with its own sound setting, changes demo sound, and verifies reset and exit delete only both demo keys. Additional browser regressions verify keyboard-result focus, singular copy, 16px solve-critical text, and the 44px privacy target.
+
+## Local verification
+
+Run from a clean checkout:
 
 ```sh
 npm ci
-# Run every command in .factory/claims.json separately
 npm test
 npm run build
 ```
 
-- Claims: 15/15 passed separately.
-- Full Playwright suite: 24/24 passed.
-- Type/production build: passed; `dist/` generated.
-- Live Lighthouse mobile: Performance 90, Accessibility 100, Best Practices 100, SEO 100; LCP 1.6 s, CLS 0.
-- Live privacy run: same-origin document/JS/CSS only; no cookies or console/page errors.
-- Live service worker: update succeeded; `/demo` reloaded offline.
-- Live phone frame samples under 4× CPU throttling: 60.83, 60.02, 59.98 fps.
-- Live and local SHA-256 matched for HTML, JS, CSS, and service worker.
-- Axe: zero serious/critical findings on the four real routes and designed 404.
+Results on 2026-09-02 UTC:
 
-No product code was modified during verification. This static product has no backend or server-side endpoint, so API allowance, concurrency, health identity, and Entra checks are not applicable.
+- `npm ci`: passed; 23 packages installed, 0 vulnerabilities.
+- `npm test`: passed, **27/27** Playwright tests. This covers the deterministic game, desktop and 390×844 mobile layout, keyboard completion, accessibility, privacy/network behavior, service-worker update plus offline reload, routes, response policy, reduced motion, and 4× CPU-throttled 60fps sampling.
+- Each of the 15 exact commands in `.factory/claims.json` was run independently and passed.
+- `npm run build`: passed (`tsc --noEmit` plus Vite). `dist/` contains the static deploy root. The initial assets are 21,474 bytes JavaScript (7.94 kB gzip) and 16,165 bytes CSS (4.50 kB gzip); no fonts load.
+- Playwright Axe found zero serious or critical findings on `/`, `/demo`, `/privacy`, `/terms`, and the designed 404. There is no separate lint script; type checking is part of the production build.
+- `/opt/fleet/lib/verify-url.sh` passed for local `/`, `/demo`, `/privacy`, and `/terms`: HTTP 200, no console/page errors, one h1 and main per route, `lang="en"`, titles, and no missing image alt or unlabeled buttons.
+- Local mobile Lighthouse on `/demo`: Performance **98**, Accessibility **100**, Best Practices **100**, SEO **100**; FCP 1.0 s, LCP 1.1 s, CLS 0, TBT 160 ms.
+
+## Deployment and known gaps
+
+Deployment and live identity verification are the remaining work for this handoff update. There are no known product gaps; backend-only checks (health, rate limits, persistence boundaries, and Entra) do not apply to this static game.

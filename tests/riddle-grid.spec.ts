@@ -32,7 +32,12 @@ test('@claim:offline-reload game reloads offline after the first visit', async (
   const context = await isolatedBrowser.newContext({ serviceWorkers: 'allow' });
   const page = await context.newPage();
   await page.goto('http://127.0.0.1:4173/demo');
-  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  const workerScript = await page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.ready;
+    await registration.update();
+    return registration.active?.scriptURL;
+  });
+  expect(workerScript).toBe('http://127.0.0.1:4173/sw.js');
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Solve the sample deduction grid' })).toBeVisible();
@@ -51,23 +56,41 @@ test('@claim:sample-complete sample reaches the solved result', async ({ page })
   await expect(page.getByText('Score: 4 of 4 leaves.')).toBeVisible();
 });
 
-test('@claim:demo-isolation sample query route is isolated and resettable', async ({ page }) => {
+test('@claim:demo-isolation sample query route isolates progress and sound, then clears both demo keys', async ({ page }) => {
   await page.goto('/');
-  const dailyKey = await page.evaluate(() => {
+  const daily = await page.evaluate(() => {
     const key = `riddle-grid:daily:${new Date().toISOString().slice(0, 10)}`;
-    localStorage.setItem(key, JSON.stringify({ placements: { fern: { row: 0, col: 0 } } }));
-    return key;
+    const progress = JSON.stringify({ placements: { fern: { row: 0, col: 0 } } });
+    localStorage.setItem(key, progress);
+    localStorage.setItem('riddle-grid:muted', 'true');
+    return { key, progress };
   });
-  const dailyBefore = await page.evaluate((key) => localStorage.getItem(key), dailyKey);
   await page.goto('/?demo=1');
   await expect(page.getByLabel('Demo mode')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sound on' })).toHaveAttribute('aria-pressed', 'false');
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBeNull();
+  await page.getByRole('button', { name: 'Sound on' }).click();
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBe('true');
+  expect(await page.evaluate((key) => localStorage.getItem(key), daily.key)).toBe(daily.progress);
+  expect(await page.evaluate(() => localStorage.getItem('riddle-grid:muted'))).toBe('true');
   await page.locator('[data-specimen="fern"]').click();
   await page.locator('[data-cell="2"]').click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'))).not.toBeNull();
-  expect(await page.evaluate((key) => localStorage.getItem(key), dailyKey)).toBe(dailyBefore);
   await page.getByRole('button', { name: 'Reset demo' }).click();
   expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'))).toBeNull();
-  expect(await page.evaluate((key) => localStorage.getItem(key), dailyKey)).toBe(dailyBefore);
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBeNull();
+  expect(await page.evaluate((key) => localStorage.getItem(key), daily.key)).toBe(daily.progress);
+  expect(await page.evaluate(() => localStorage.getItem('riddle-grid:muted'))).toBe('true');
+  await expect(page.getByRole('button', { name: 'Sound on' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Sound on' }).click();
+  await page.getByRole('button', { name: 'Start for real' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('button', { name: 'Sound off' })).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:muted'))).toBeNull();
+  expect(await page.evaluate((key) => localStorage.getItem(key), daily.key)).toBe(daily.progress);
+  expect(await page.evaluate(() => localStorage.getItem('riddle-grid:muted'))).toBe('true');
 });
 
 test('@claim:restart-reset restarting the sample clears its layout', async ({ page }) => {
@@ -96,7 +119,7 @@ test('@claim:failed-checks three incorrect checks open the explanation', async (
 });
 
 test('@claim:sound-setting sound choice persists in this browser', async ({ page }) => {
-  await page.goto('/demo');
+  await page.goto('/');
   await page.getByRole('button', { name: 'Sound on' }).click();
   await page.reload();
   await expect(page.getByRole('button', { name: 'Sound off' })).toHaveAttribute('aria-pressed', 'true');
@@ -119,6 +142,50 @@ test('@claim:keyboard-controls grid works with keyboard controls', async ({ page
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-cell="2"]')).toHaveAttribute('aria-label', /Fern/);
+});
+
+test('keyboard completion moves focus to the focusable result heading', async ({ page }) => {
+  await page.goto('/?demo=1');
+  for (const [specimen, cell] of [['fern', 2], ['acorn', 13], ['berry', 11], ['pod', 4]] as const) {
+    await page.locator(`[data-specimen="${specimen}"]`).focus();
+    await page.keyboard.press('Enter');
+    await page.locator(`[data-cell="${cell}"]`).focus();
+    await page.keyboard.press('Enter');
+  }
+  await page.getByRole('button', { name: 'Check layout' }).focus();
+  await page.keyboard.press('Enter');
+  const result = page.getByRole('heading', { name: 'You found the only layout' });
+  await expect(result).toHaveAttribute('tabindex', '-1');
+  await expect(result).toBeFocused();
+});
+
+test('one failed check uses singular check copy', async ({ page }) => {
+  await page.goto('/demo');
+  for (const [specimen, cell] of [['fern', 0], ['acorn', 1], ['berry', 2], ['pod', 3]] as const) {
+    await page.locator(`[data-specimen="${specimen}"]`).click();
+    await page.locator(`[data-cell="${cell}"]`).click();
+  }
+  await page.getByRole('button', { name: 'Check layout' }).click();
+  await page.getByRole('button', { name: 'Check layout' }).click();
+  await expect(page.locator('#game-message')).toHaveText('That layout did not fit every clue. 1 check left.');
+});
+
+test('solve-critical body text and the privacy link meet the 16px and 44px baselines', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/');
+  const privacyTarget = await page.getByRole('link', { name: 'Read the privacy details' }).boundingBox();
+  expect(privacyTarget!.width).toBeGreaterThanOrEqual(44);
+  expect(privacyTarget!.height).toBeGreaterThanOrEqual(44);
+
+  await page.goto('http://127.0.0.1:4173/demo');
+  const bodyTextSizes = await page.locator('.clue-copy small, .hint-panel p, .hint-panel li').evaluateAll((items) => items.map((item) => ({
+    text: item.textContent?.trim(),
+    size: Number.parseFloat(getComputedStyle(item).fontSize),
+  })));
+  expect(bodyTextSizes).not.toHaveLength(0);
+  for (const item of bodyTextSizes) expect(item.size, `${item.text} must be at least 16px`).toBeGreaterThanOrEqual(16);
+  await context.close();
 });
 
 test('@claim:phone-60fps game sustains the phone frame-rate target', async ({ browser }) => {

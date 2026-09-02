@@ -22,10 +22,10 @@
   },
   {
     "id": "demo-isolation",
-    "claim": "The sample opens at ?demo=1 and saves separately from daily progress.",
+    "claim": "The sample opens at ?demo=1 and saves progress and sound separately from daily play.",
     "where": "landing action, demo banner, README, and demo guide",
     "test": "npm test -- --grep @claim:demo-isolation",
-    "sandbox": "fresh browser context; seed a daily layout, open /?demo=1, place a sample specimen, assert the banner and separate demo storage key, then reset only the demo key"
+    "sandbox": "fresh browser context; seed daily progress and sound, open /?demo=1, assert demo starts with its own sound setting, change it, then reset and exit while asserting only demo progress and sound keys are removed"
   },
   {
     "id": "restart-reset",

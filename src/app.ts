@@ -24,6 +24,32 @@ const blankState = (): GameState => ({ placements: {}, selected: null, hints: []
 const specimenName = (id: SpecimenId) => specimens.find((item) => item.id === id)!.name;
 const cellName = ({ row, col }: Position) => `row ${row + 1}, column ${col + 1}`;
 const storageKey = () => demoMode ? 'demo:riddle-grid:sample' : `riddle-grid:daily:${dateKey}`;
+const soundStorageKey = () => demoMode ? 'demo:riddle-grid:muted' : 'riddle-grid:muted';
+
+function isMuted(): boolean {
+  try {
+    return localStorage.getItem(soundStorageKey()) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function setMuted(muted: boolean): void {
+  try {
+    localStorage.setItem(soundStorageKey(), String(muted));
+  } catch {
+    announce('This browser could not save the sound setting.');
+  }
+}
+
+function clearDemoStorage(): void {
+  try {
+    localStorage.removeItem('demo:riddle-grid:sample');
+    localStorage.removeItem('demo:riddle-grid:muted');
+  } catch {
+    // Demo cleanup is best-effort when browser storage is unavailable.
+  }
+}
 
 function readState(): GameState {
   try {
@@ -52,7 +78,7 @@ function header(): string {
     <header class="site-header">
       <a class="wordmark" href="/" data-route aria-label="Riddle Grid home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M7 7h26v26H7zM20 7v26M7 20h26"/><path d="M12 29c6-2 9-7 10-14 4 4 6 9 5 14-5 3-10 3-15 0Z"/></svg><span>Riddle Grid</span></a>
       <nav aria-label="Main navigation"><a href="/?demo=1" data-route>Demo</a><a href="/#how">How it works</a><a href="/privacy" data-route>Privacy</a></nav>
-      <button class="sound-button" type="button" data-action="toggle-sound" aria-pressed="${localStorage.getItem('riddle-grid:muted') === 'true'}">${localStorage.getItem('riddle-grid:muted') === 'true' ? 'Sound off' : 'Sound on'}</button>
+      <button class="sound-button" type="button" data-action="toggle-sound" aria-pressed="${isMuted()}">${isMuted() ? 'Sound off' : 'Sound on'}</button>
     </header>`;
 }
 
@@ -122,19 +148,22 @@ function statusText(): string {
   if (gameState.phase === 'explained') return 'The solution is open. Compare each cell with the clue chains.';
   if (gameState.selected) return `${specimenName(gameState.selected)} selected. Choose a grid cell.`;
   const placed = Object.keys(gameState.placements).length;
-  if (gameState.checks) return `That layout did not fit every clue. ${3 - gameState.checks} checks left.`;
+  if (gameState.checks) {
+    const remaining = 3 - gameState.checks;
+    return `That layout did not fit every clue. ${remaining} ${remaining === 1 ? 'check' : 'checks'} left.`;
+  }
   return placed ? `${placed} of 4 specimens placed.` : 'Select a clue card, then choose a grid cell.';
 }
 
 function resultMarkup(isDemo: boolean): string {
   const score = Math.max(0, 4 - gameState.hints.length);
-  return `<section class="result" aria-labelledby="result-title"><p class="eyebrow">${gameState.phase === 'won' ? 'Field sheet complete' : 'Solution explained'}</p><h3 id="result-title">${gameState.phase === 'won' ? `You found the only layout` : 'Here is the only layout'}</h3><p>${gameState.phase === 'won' ? `Score: ${score} of 4 leaves. ` : ''}${relationsFor(currentPuzzle).map(clueText).join(' ')}</p><div class="solution-list">${specimens.map(({ id }) => `<span>${icon(id)} <b>${specimenName(id)}</b> ${cellName(currentPuzzle.solution[id])}</span>`).join('')}</div><button type="button" class="button primary" data-action="restart">${isDemo ? 'Restart sample' : 'Play this grid again'}</button>${!isDemo ? '<a href="/demo" data-route>Open the sample grid</a>' : ''}</section>`;
+  return `<section class="result" aria-labelledby="result-title"><p class="eyebrow">${gameState.phase === 'won' ? 'Field sheet complete' : 'Solution explained'}</p><h3 id="result-title" tabindex="-1">${gameState.phase === 'won' ? `You found the only layout` : 'Here is the only layout'}</h3><p>${gameState.phase === 'won' ? `Score: ${score} of 4 leaves. ` : ''}${relationsFor(currentPuzzle).map(clueText).join(' ')}</p><div class="solution-list">${specimens.map(({ id }) => `<span>${icon(id)} <b>${specimenName(id)}</b> ${cellName(currentPuzzle.solution[id])}</span>`).join('')}</div><button type="button" class="button primary" data-action="restart">${isDemo ? 'Restart sample' : 'Play this grid again'}</button>${!isDemo ? '<a href="/demo" data-route>Open the sample grid</a>' : ''}</section>`;
 }
 
 function infoPage(kind: 'privacy' | 'terms' | '404'): string {
   const content = kind === 'privacy' ? {
     title: 'Privacy without an account', pageTitle: 'Privacy — Riddle Grid',
-    body: `<p>Riddle Grid stores your current layout, completed result, and sound choice in your browser.</p><h2>What leaves your device</h2><p>No puzzle choices or personal details leave your device. The site uses no analytics, ads, cookies, or third-party scripts.</p><h2>Remove local data</h2><p>Clear this site’s browser storage to remove saved progress and settings.</p>`,
+    body: `<p>Riddle Grid stores your current layout, completed result, and sound choice in your browser.</p><p>The sample uses separate temporary progress and sound keys. Reset demo and Start for real remove both sample keys.</p><h2>What leaves your device</h2><p>No puzzle choices or personal details leave your device. The site uses no analytics, ads, cookies, or third-party scripts.</p><h2>Remove local data</h2><p>Clear this site’s browser storage to remove saved progress and settings.</p>`,
   } : kind === 'terms' ? {
     title: 'Terms for playing Riddle Grid', pageTitle: 'Terms — Riddle Grid',
     body: `<p>Riddle Grid is a puzzle provided as-is. You may play it for personal use.</p><h2>Fair use</h2><p>Do not disrupt the site or present its puzzles and artwork as your own.</p><h2>Availability</h2><p>The daily puzzle may change or stop without notice.</p>`,
@@ -157,7 +186,9 @@ function setMetadata(title: string, description: string, canonicalPath: string):
 }
 
 function render(path = window.location.pathname, search = window.location.search): void {
-  demoMode = isDemoLocation(path, search);
+  const nextDemoMode = isDemoLocation(path, search);
+  if (demoMode && !nextDemoMode) clearDemoStorage();
+  demoMode = nextDemoMode;
   if ((path === '/' || path === '/index.html') && !demoMode) {
     setMetadata('Riddle Grid — Solve a daily deduction grid', 'Place four illustrated specimens in a daily 4×4 deduction grid.', '/');
     app.innerHTML = landing();
@@ -199,7 +230,7 @@ function announce(message: string): void {
 }
 
 function playTone(success: boolean): void {
-  if (localStorage.getItem('riddle-grid:muted') === 'true') return;
+  if (isMuted()) return;
   const context = new AudioContext();
   const oscillator = context.createOscillator();
   const gain = context.createGain();
@@ -295,9 +326,9 @@ function bindGameEvents(): void {
 
 function bindEvents(): void {
   document.querySelectorAll<HTMLAnchorElement>('a[data-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); const url = new URL(link.href); navigate(`${url.pathname}${url.search}${url.hash}`); }));
-  document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', () => { localStorage.removeItem('demo:riddle-grid:sample'); gameState = blankState(); render('/demo'); document.querySelector<HTMLElement>('#page-title')?.focus(); });
-  document.querySelector('[data-action="start-real"]')?.addEventListener('click', () => { localStorage.removeItem('demo:riddle-grid:sample'); navigate('/'); });
-  document.querySelector('[data-action="toggle-sound"]')?.addEventListener('click', (event) => { const button = event.currentTarget as HTMLButtonElement; const next = button.getAttribute('aria-pressed') !== 'true'; localStorage.setItem('riddle-grid:muted', String(next)); button.setAttribute('aria-pressed', String(next)); button.textContent = next ? 'Sound off' : 'Sound on'; });
+  document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', () => { clearDemoStorage(); gameState = blankState(); render('/demo'); document.querySelector<HTMLElement>('#page-title')?.focus(); });
+  document.querySelector('[data-action="start-real"]')?.addEventListener('click', () => { clearDemoStorage(); navigate('/'); });
+  document.querySelector('[data-action="toggle-sound"]')?.addEventListener('click', (event) => { const button = event.currentTarget as HTMLButtonElement; const next = button.getAttribute('aria-pressed') !== 'true'; setMuted(next); button.setAttribute('aria-pressed', String(next)); button.textContent = next ? 'Sound off' : 'Sound on'; });
   bindGameEvents();
 }
 
