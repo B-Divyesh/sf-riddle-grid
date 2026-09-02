@@ -1,10 +1,22 @@
-# Riddle Grid verification 6 handoff
+# Riddle Grid adversarial review 3 handoff
 
 ## Status
 
-**PASS** — independently verified candidate `1320b08eb227c8d4e6693424e7021b84fa9cd669` at <https://riddle-grid.sociobot.in> on 2026-09-02 UTC.
+**FAIL** — review 3 found eight issues, including two blockers. Product code was not modified.
 
-The live deployment byte-matches the candidate build. All 15 declared claim commands, the complete 27-test Playwright suite, TypeScript checking, and the production build pass. The daily and sample modes both reach their real solved screens; three invalid checks reach the explanation end state; restart, persistence, demo isolation, keyboard, touch, mobile, reduced motion, offline update/reload, privacy, caching, and response security behavior were independently exercised.
+The blocking items are the regressed unlisted 3–5 minute README claim (F-3-1 / F-1-5) and the still-live **“1 leaves”** score defect previously recorded as RG-V6-01 (F-3-2 / RG-V6-01). Other findings cover a moderate Axe landmark violation, the state-only sound button wording, a metaphorical 404 h1, an inaccurate skip-link label on text routes, README privacy jargon, and the demo guide's nonexistent “Rain ledger” name.
+
+Full findings and exact rewrites are in [`.factory/review-3.md`](review-3.md).
+
+## Verification performed
+
+- Cold live Chromium at 390 × 844 and 1440 × 900.
+- One-click live demo, placement, three hints, Reset demo, Start for real, daily/demo storage sentinels, request log, cookies, and offline reload.
+- Every exact command in `.factory/claims.json` from clean clone `/tmp/riddle-grid-review-3-clean.xyiu9j`: **15/15 passed**.
+- Full clean-clone `npm test`: **27/27 passed**.
+- Clean-clone `npm run build`: passed; `dist/` produced; app JavaScript is 7.94 kB gzip.
+- Live/local SHA-256 comparison: HTML, JavaScript, and CSS match.
+- Route/title/metadata/header/footer checks, dead-link crawl, Back/Forward focus, mobile targets, reduced motion, Playwright Axe, and `/opt/fleet/lib/verify-url.sh`.
 
 ## Reproduce
 
@@ -14,21 +26,8 @@ npm test
 npm run build
 ```
 
-Use <https://riddle-grid.sociobot.in/?demo=1> for the fixed sample. The complete test matrix and live evidence are recorded in [`.factory/verification-6.md`](verification-6.md).
+Use <https://riddle-grid.sociobot.in/?demo=1> for the fixed sample. Reveal three hints to reproduce **“1 leaves.”** Run Playwright Axe on `/` or `/demo` to reproduce `landmark-complementary-is-top-level` on `.hint-panel`.
 
-Key results:
+## Next step
 
-- Claims: 15/15 passed as individually listed in `.factory/claims.json`.
-- Full suite: 27/27 passed in 47.1 s.
-- Build: 7.9 kB gzip JavaScript and 4.5 kB gzip CSS; `dist/` produced.
-- Live Lighthouse `/`: 90 Performance, 100 Accessibility, 100 Best Practices, 100 SEO; LCP 1.6 s, CLS 0.
-- Axe: zero serious/critical findings on root, demo, privacy, terms, and 404.
-- Live frame samples at the declared throttled phone profile: 61.08, 60.04, 60.01 fps; median 60.04 fps.
-- Privacy: all observed requests were same-origin and cookies were empty.
-- Offline: the updated active service worker reloaded `/demo` without network access.
-
-## Defects and next step
-
-- Low, non-blocking: after the third hint, the sheet score says **“1 leaves”**. Change this to **“1 leaf”** and add a regression assertion when product code is next edited.
-
-No backend-only, rate-limit, billing, or Entra checks apply to this static game. No product code was modified during verification.
+Repair all eight findings without weakening the existing claim and interaction coverage. Add tests for the two confirmed regressions and the Axe violation, deploy the repaired candidate, and repeat the full adversarial review from a fresh context.
