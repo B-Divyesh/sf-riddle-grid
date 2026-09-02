@@ -1,0 +1,145 @@
+{
+  "base": "https://riddle-grid.sociobot.in",
+  "checkedAt": "2026-09-02T03:58:20.521Z",
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "title": "Riddle Grid — Solve a daily deduction grid",
+      "heading": "Solve one short deduction grid",
+      "axeViolations": 0
+    },
+    {
+      "route": "/?demo=1",
+      "status": 200,
+      "title": "Demo — Riddle Grid",
+      "heading": "Solve the sample deduction grid",
+      "axeViolations": 0
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "title": "Privacy — Riddle Grid",
+      "heading": "Privacy without an account",
+      "axeViolations": 0
+    },
+    {
+      "route": "/terms",
+      "status": 200,
+      "title": "Terms — Riddle Grid",
+      "heading": "Terms for playing Riddle Grid",
+      "axeViolations": 0
+    },
+    {
+      "route": "/missing-polish-3-page",
+      "status": 404,
+      "title": "Page not found — Riddle Grid",
+      "heading": "Page not found",
+      "axeViolations": 0
+    }
+  ],
+  "links": [
+    {
+      "url": "https://riddle-grid.sociobot.in/",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/?demo=1",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/#how",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/privacy",
+      "status": 200
+    },
+    {
+      "url": "https://riddle-grid.sociobot.in/terms",
+      "status": 200
+    },
+    {
+      "url": "https://sociobot.in/",
+      "status": 200
+    }
+  ],
+  "demo": {
+    "queryEntry": true,
+    "banner": true,
+    "resetIsolated": true,
+    "startForRealClearsDemo": true,
+    "oneLeaf": true,
+    "solved": true,
+    "resultFocused": true,
+    "axeViolations": 0,
+    "requestOrigins": [
+      "https://riddle-grid.sociobot.in"
+    ],
+    "cookies": ""
+  },
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "scrollWidth": 390,
+    "cellBottom": 751.2335205078125,
+    "specimenBottom": 578.21875,
+    "undersizedTargets": [],
+    "reducedMotion": {
+      "animationDuration": "1e-05s",
+      "transitionDuration": "1e-05s"
+    },
+    "resized": {
+      "mainClientWidth": 390,
+      "mainScrollWidth": 390,
+      "specimens": [
+        {
+          "label": "Fern",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        },
+        {
+          "label": "Acorn",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        },
+        {
+          "label": "Berries",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        },
+        {
+          "label": "Seed pod",
+          "clientWidth": 354,
+          "scrollWidth": 354,
+          "right": 373
+        }
+      ]
+    }
+  },
+  "offline": {
+    "worker": "https://riddle-grid.sociobot.in/sw.js",
+    "reload": true
+  },
+  "performance": {
+    "frameSamples": [
+      61.035636936360035,
+      60.01574183390166,
+      59.97443712518174
+    ],
+    "medianFps": 60.01574183390166,
+    "profile": "390x844, DPR 2, 4x CPU throttling"
+  },
+  "headers": {
+    "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+    "referrerPolicy": "strict-origin-when-cross-origin",
+    "contentTypeOptions": "nosniff",
+    "assetCacheControl": "public, max-age=31536000, immutable",
+    "serviceWorkerCacheControl": "no-cache"
+  }
+}
