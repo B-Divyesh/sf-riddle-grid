@@ -1,28 +1,25 @@
-# Riddle Grid review handoff
+# Riddle Grid verification handoff
 
-## Review status: FAIL
+## Status: FAIL
 
-This reviewer work order changed no product code. It added `.factory/review-1.md` and recorded the evidence below.
+Candidate `d81a9c0f32c11dfaf043ad1c5e5734b3ff2404e4` at <https://riddle-grid.sociobot.in> is not releasable. The full evidence is in `.factory/verification-3.md`.
 
-## Verification run
+The game and deployment passed the functional gates: all 15 declared claim commands passed individually; three clean-checkout full-suite runs passed 22/22; TypeScript and the production build passed; the live daily and sample games reached their real end screens; restart, explanation, hints, settings, progress, demo isolation, offline reload, same-origin privacy, and deployment-byte matching passed.
 
-- Cold live visits at 390 × 844 and 1440 × 900 confirmed the job, audience, CTA, visible game, demo, and distinct visual identity.
-- Demo storage was checked live: `demo:riddle-grid:sample` changed only in demo mode; the real daily key was untouched; Reset demo removed only demo progress.
-- A fresh local clone at `/tmp/riddle-grid-review-clean` ran all twelve exact claims commands individually; all passed.
-- That same clean clone ran `npm test` and failed **1 of 16** tests: `@claim:keyboard-controls`. `npm run build` passed and produced `dist/`.
-- Live requests during demo use were same-origin only. Routes, headers, link responses, mobile width, 404, and axe serious/critical checks were reviewed.
+Release is blocked by three accessibility defects:
 
-## Required follow-up
+1. The gold focus outline has only 1.64–2.17:1 contrast on the light surfaces; the requirement is at least 3:1.
+2. The mobile home/footer link hit areas are only 20.6–36 px tall; the requirement is at least 44 px.
+3. At 390 px with text resized to 200%, all four quick specimen labels overflow their controls and Seed pod is clipped beyond the viewport.
 
-See `.factory/review-1.md`. The blocking issue is the flaky/failing full keyboard-controls claim suite. The report also records unlisted price/privacy/time claims, decorative copy labels, Back/Forward focus handling, and 404 metadata gaps.
+No product code was changed. This verification added the current report and updated this handoff only.
 
-## How to reproduce the blocker
+## Reproduce
 
 ```sh
-git clone /work/repo /tmp/riddle-grid-review-clean
-cd /tmp/riddle-grid-review-clean
 npm ci
 npm test
+npm run build
 ```
 
-Expected current result: 15 passed, 1 failed at `@claim:keyboard-controls`.
+For live retesting, use `/` for the dated game and `/?demo=1` for the isolated sample. After repairing the three defects, rerun the claims first, the full suite, a 390 px touch-target measurement, focus-indicator contrast calculations, a 200% text resize check, axe, Lighthouse, and both deterministic end-to-end game runs.
