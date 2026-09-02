@@ -85,7 +85,7 @@ try {
   assert(missingAxe.violations.length === 0, `404 has Axe violations: ${missingAxe.violations.map(({ id }) => id).join(', ')}`);
   await missingPage.setViewportSize({ width: 390, height: 844 });
   await missingPage.screenshot({ path: join(evidenceDir, 'live-404-390x844.png'), fullPage: true });
-  report.routes.push({ route: '/missing-polish-3-page', status: 404, title: 'Page not found — Riddle Grid', heading: 'Page not found', axeViolations: 0 });
+  report.routes.push({ route: '/missing-polish-4-page', status: 404, title: 'Page not found — Riddle Grid', heading: 'Page not found', axeViolations: 0 });
   await routeContext.close();
 
   const mobileNavigationContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -152,6 +152,23 @@ try {
   }), daily);
   assert(isolatedState.daily === daily.value && isolatedState.dailySound === 'true', 'Reset demo changed daily data');
   assert(isolatedState.demo === null && isolatedState.demoSound === null, 'Reset demo retained demo data');
+
+  await demoPage.getByRole('button', { name: 'Turn sound off' }).click();
+  await demoPage.locator('[data-specimen="fern"]').click();
+  await demoPage.locator('[data-cell="2"]').click();
+  await demoPage.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'How it works', exact: true }).click();
+  assert(new URL(demoPage.url()).hash === '#how', 'How it works did not leave demo for the instructions');
+  const headerExitState = await demoPage.evaluate(({ key }) => ({
+    daily: localStorage.getItem(key),
+    dailySound: localStorage.getItem('riddle-grid:muted'),
+    demo: localStorage.getItem('demo:riddle-grid:sample'),
+    demoSound: localStorage.getItem('demo:riddle-grid:muted'),
+  }), daily);
+  assert(headerExitState.daily === daily.value && headerExitState.dailySound === 'true', 'header exit changed daily data');
+  assert(headerExitState.demo === null && headerExitState.demoSound === null, 'header exit retained demo data');
+
+  await demoPage.goto(`${base}/?demo=1&exit=1`);
+  await demoPage.getByRole('button', { name: 'Turn sound off' }).click();
   await demoPage.getByRole('button', { name: 'Start for real' }).click();
   assert(new URL(demoPage.url()).pathname === '/', 'Start for real did not leave demo');
 
@@ -169,7 +186,7 @@ try {
   assert(await demoPage.evaluate(() => document.cookie) === '', 'demo set a cookie');
   assert([...requestOrigins].every((origin) => origin === new URL(base).origin), 'demo requested another origin');
   assert(demoErrors.length === 0, `demo console errors: ${demoErrors.join(' | ')}`);
-  report.demo = { queryEntry: true, banner: true, resetIsolated: true, startForRealClearsDemo: true, oneLeaf: true, solved: true, resultFocused: true, axeViolations: 0, requestOrigins: [...requestOrigins], cookies: '' };
+  report.demo = { queryEntry: true, banner: true, resetIsolated: true, headerExitClearsDemo: true, startForRealClearsDemo: true, oneLeaf: true, solved: true, resultFocused: true, axeViolations: 0, requestOrigins: [...requestOrigins], cookies: '' };
 
   await demoPage.goto(`${base}/?mobile=1`);
   await demoPage.screenshot({ path: join(evidenceDir, 'live-root-390x844.png'), fullPage: true });
@@ -210,8 +227,16 @@ try {
   await demoPage.emulateMedia({ reducedMotion: 'no-preference' });
   await demoPage.evaluate(() => document.documentElement.style.setProperty('font-size', '200%', 'important'));
   const resized = await demoPage.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    documentScrollWidth: document.documentElement.scrollWidth,
     mainClientWidth: document.querySelector('main')?.clientWidth,
     mainScrollWidth: document.querySelector('main')?.scrollWidth,
+    navigation: [...document.querySelectorAll('.site-header nav a')].map((node) => ({
+      label: node.textContent?.trim(),
+      clientWidth: node.clientWidth,
+      scrollWidth: node.scrollWidth,
+      right: node.getBoundingClientRect().right,
+    })),
     specimens: [...document.querySelectorAll('.quick-specimen')].map((node) => ({
       label: node.textContent?.trim(),
       clientWidth: node.clientWidth,
@@ -219,7 +244,9 @@ try {
       right: node.getBoundingClientRect().right,
     })),
   }));
+  assert(resized.documentScrollWidth <= resized.viewport, '200% text causes document overflow');
   assert(resized.mainScrollWidth <= resized.mainClientWidth, '200% text causes horizontal overflow');
+  assert(resized.navigation.every(({ clientWidth, scrollWidth, right }) => scrollWidth <= clientWidth && right <= 390), `200% text clips a header link: ${JSON.stringify(resized.navigation)}`);
   assert(resized.specimens.every(({ clientWidth, scrollWidth, right }) => scrollWidth <= clientWidth && right <= 390), `200% text clips a specimen control: ${JSON.stringify(resized.specimens)}`);
   report.mobile = { ...firstScreen, reducedMotion, resized };
   await demoContext.close();
