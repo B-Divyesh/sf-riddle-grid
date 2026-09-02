@@ -11,7 +11,7 @@ type RecordedRequest = {
 
 function recordRequests(page: import('@playwright/test').Page): RecordedRequest[] {
   const requests: RecordedRequest[] = [];
-  page.on('request', (request) => requests.push({
+  page.context().on('request', (request) => requests.push({
     url: request.url(),
     method: request.method(),
     body: request.postData(),
@@ -24,16 +24,27 @@ function expectOnlyAllowlistedStaticGets(requests: RecordedRequest[], entry: '/d
   expect(requests.length, 'the demo must load at least its HTML document').toBeGreaterThan(0);
   for (const request of requests) {
     const url = new URL(request.url);
+    const pathAndQuery = `${url.pathname}${url.search}`;
     const isEntry = entry === '/demo'
       ? url.pathname === '/demo' && url.search === ''
       : url.pathname === '/' && url.search === '?demo=1';
     const isStaticFile = /^\/assets\/app-[\w-]+\.(?:js|css)$/.test(url.pathname)
       || ['/sw.js', '/favicon.svg', '/apple-touch-icon.png'].includes(url.pathname);
+    const isPrecache = [
+      '/?precache=8',
+      '/?demo=1&precache=8',
+      '/demo?precache=8',
+      '/privacy?precache=8',
+      '/terms?precache=8',
+      '/favicon.svg?precache=8',
+      '/art/field-desk-640.webp?precache=8',
+      '/art/field-desk.webp?precache=8',
+    ].includes(pathAndQuery) || (/^\/assets\/app-[\w-]+\.(?:js|css)$/.test(url.pathname) && url.search === '?precache=8');
 
     expect(url.origin, `unexpected request origin: ${request.url}`).toBe('http://127.0.0.1:4173');
     expect(request.method, `non-GET request: ${request.url}`).toBe('GET');
     expect(request.body, `request payload found: ${request.url}`).toBeNull();
-    expect(isEntry || (isStaticFile && url.search === ''), `request is not on the static allowlist: ${request.url}`).toBe(true);
+    expect(isEntry || (isStaticFile && url.search === '') || isPrecache, `request is not on the static allowlist: ${request.url}`).toBe(true);
     expect(url.username || url.password || url.hash, `request URL contains unexpected data: ${request.url}`).toBe('');
   }
 }

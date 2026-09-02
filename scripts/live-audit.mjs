@@ -16,13 +16,24 @@ const assertStaticDemoRequests = (requests) => {
   assert(requests.length > 0, 'privacy audit captured no document request');
   for (const request of requests) {
     const url = new URL(request.url);
+    const pathAndQuery = `${url.pathname}${url.search}`;
     const isEntry = url.pathname === '/' && url.search === '?demo=1';
     const isStaticFile = /^\/assets\/app-[\w-]+\.(?:js|css)$/.test(url.pathname)
       || ['/sw.js', '/favicon.svg', '/apple-touch-icon.png'].includes(url.pathname);
+    const isPrecache = [
+      '/?precache=8',
+      '/?demo=1&precache=8',
+      '/demo?precache=8',
+      '/privacy?precache=8',
+      '/terms?precache=8',
+      '/favicon.svg?precache=8',
+      '/art/field-desk-640.webp?precache=8',
+      '/art/field-desk.webp?precache=8',
+    ].includes(pathAndQuery) || (/^\/assets\/app-[\w-]+\.(?:js|css)$/.test(url.pathname) && url.search === '?precache=8');
     assert(url.origin === expectedOrigin, `privacy request left the product origin: ${request.url}`);
     assert(request.method === 'GET', `privacy request was not GET: ${request.method} ${request.url}`);
     assert(request.body === null, `privacy request carried a body: ${request.url}`);
-    assert(isEntry || (isStaticFile && url.search === ''), `privacy request is outside the static allowlist: ${request.url}`);
+    assert(isEntry || (isStaticFile && url.search === '') || isPrecache, `privacy request is outside the static allowlist: ${request.url}`);
     assert(!(url.username || url.password || url.hash), `privacy request URL carried unexpected data: ${request.url}`);
   }
 };
@@ -271,7 +282,7 @@ try {
   const privacyContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const privacyPage = await privacyContext.newPage();
   const privacyRequests = [];
-  privacyPage.on('request', (request) => privacyRequests.push({
+  privacyContext.on('request', (request) => privacyRequests.push({
     url: request.url(),
     method: request.method(),
     body: request.postData(),
