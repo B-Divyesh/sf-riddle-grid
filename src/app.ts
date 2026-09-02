@@ -18,6 +18,8 @@ let currentPuzzle: Puzzle;
 let demoMode = false;
 let activeCell = 0;
 
+const isDemoLocation = (path = window.location.pathname, search = window.location.search) => path === '/demo' || new URLSearchParams(search).get('demo') === '1';
+
 const blankState = (): GameState => ({ placements: {}, selected: null, hints: [], checks: 0, phase: 'playing' });
 const specimenName = (id: SpecimenId) => specimens.find((item) => item.id === id)!.name;
 const cellName = ({ row, col }: Position) => `row ${row + 1}, column ${col + 1}`;
@@ -49,13 +51,13 @@ function header(): string {
     ${demoMode ? `<aside class="demo-banner" aria-label="Demo mode"><span><strong>Demo</strong> — sample data, nothing is saved to your daily game.</span><span class="demo-actions"><button type="button" data-action="reset-demo">Reset demo</button><button type="button" data-action="start-real">Start for real</button></span></aside>` : ''}
     <header class="site-header">
       <a class="wordmark" href="/" data-route aria-label="Riddle Grid home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M7 7h26v26H7zM20 7v26M7 20h26"/><path d="M12 29c6-2 9-7 10-14 4 4 6 9 5 14-5 3-10 3-15 0Z"/></svg><span>Riddle Grid</span></a>
-      <nav aria-label="Main navigation"><a href="/demo" data-route>Demo</a><a href="/#how">How it works</a><a href="/privacy" data-route>Privacy</a></nav>
+      <nav aria-label="Main navigation"><a href="/?demo=1" data-route>Demo</a><a href="/#how">How it works</a><a href="/privacy" data-route>Privacy</a></nav>
       <button class="sound-button" type="button" data-action="toggle-sound" aria-pressed="${localStorage.getItem('riddle-grid:muted') === 'true'}">${localStorage.getItem('riddle-grid:muted') === 'true' ? 'Sound off' : 'Sound on'}</button>
     </header>`;
 }
 
 function footer(): string {
-  return `<footer><p>Riddle Grid is a free daily deduction game.</p><nav aria-label="Footer navigation"><a href="/privacy" data-route>Privacy</a><a href="/terms" data-route>Terms</a><a href="https://sociobot.in">Built by Param Factory <span aria-hidden="true">↗</span><span class="sr-only">(external site)</span></a></nav><p>Original generated field-desk art · v1.0.0</p></footer>`;
+  return `<footer><p>Riddle Grid is a daily deduction game.</p><nav aria-label="Footer navigation"><a href="/privacy" data-route>Privacy</a><a href="/terms" data-route>Terms</a><a href="https://sociobot.in">Built by Param Factory <span aria-hidden="true">↗</span><span class="sr-only">(external site)</span></a></nav><p>Original generated field-desk art · v1.0.0</p></footer>`;
 }
 
 function landing(): string {
@@ -64,14 +66,14 @@ function landing(): string {
   return `${header()}<main id="main">
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-copy"><h1 id="page-title" tabindex="-1">Solve one short deduction grid</h1><p class="lede">For coffee-break players who want logic without spelling tests.</p>
-        <div class="hero-action"><a class="button primary" href="/demo" data-route>Try it with sample data</a><span>Opens a ready sample.</span></div>
+        <div class="hero-action"><a class="button primary" href="/?demo=1" data-route>Try it with sample data</a><span>Opens a ready sample.</span></div>
         <ul class="plain-facts"><li>Free to play.</li><li>Offline after one visit.</li><li>Saved in this browser.</li></ul>
       </div>
       <figure class="hero-art"><picture><source srcset="/art/field-desk-640.webp 640w, /art/field-desk.webp 1200w" sizes="(max-width: 760px) 92vw, 48vw" type="image/webp"><img src="/art/field-desk.webp" width="1200" height="800" alt="Four pressed plant specimens surround a blank field grid." fetchpriority="high" decoding="async"></picture><figcaption>Today’s clues belong on one field grid.</figcaption></figure>
     </section>
     ${gameMarkup(false)}
-    <section class="how" id="how" aria-labelledby="how-title"><p class="section-number">Field method / 03 steps</p><h2 id="how-title">How the grid works</h2><ol><li><strong>Read the clue cards.</strong><span>Above and left describe each pair.</span></li><li><strong>Place four specimens.</strong><span>Use each row and column once.</span></li><li><strong>Check the layout.</strong><span>See the solved grid and its explanation.</span></li></ol></section>
-    <section class="privacy-note" aria-labelledby="privacy-title"><div><p class="section-number">A small daily ritual</p><h2 id="privacy-title">The game stays on your device</h2></div><div><p>Riddle Grid has no account, ads, chat, or user-made clues.</p><p>Your layout and sound setting use browser storage. The game sends no personal data.</p><a href="/privacy" data-route>Read the privacy details</a></div></section>
+    <section class="how" id="how" aria-labelledby="how-title"><h2 id="how-title">How the grid works</h2><ol><li><strong>Read the clue cards.</strong><span>Above and left describe each pair.</span></li><li><strong>Place four specimens.</strong><span>Use each row and column once.</span></li><li><strong>Check the layout.</strong><span>See the solved grid and its explanation.</span></li></ol></section>
+    <section class="privacy-note" aria-labelledby="privacy-title"><div><h2 id="privacy-title">The game stays on your device</h2></div><div><p>Your layout and sound setting use browser storage. The game sends no personal data.</p><a href="/privacy" data-route>Read the privacy details</a></div></section>
   </main>${footer()}<div class="route-status sr-only" aria-live="polite"></div><div class="online-status" role="status" hidden></div>`;
 }
 
@@ -99,7 +101,7 @@ function gameMarkup(isDemo: boolean): string {
   const hintsLeft = specimens.filter(({ id }) => !gameState.hints.includes(id));
   const end = gameState.phase !== 'playing';
   return `<section class="game-sheet" id="play" aria-labelledby="game-title" data-testid="game">
-    <div class="sheet-heading"><div><p class="section-number">Field sheet ${currentPuzzle.id} · ${demoMode ? 'sample' : dateKey}</p><h2 id="game-title">${currentPuzzle.title}</h2><p>${currentPuzzle.note}</p></div><div class="leaf-score" aria-label="Maximum score: ${score} leaves">${Array.from({ length: 4 }, (_, index) => `<span class="leaf ${index < score ? '' : 'spent'}">◆</span>`).join('')}<small>${score} leaves</small></div></div>
+    <div class="sheet-heading"><div><p class="section-number">Field sheet ${currentPuzzle.id} · ${demoMode ? 'sample' : dateKey}</p><h2 id="game-title">${demoMode ? 'Sample deduction grid' : 'Today’s deduction grid'}</h2><p>${currentPuzzle.note}</p></div><div class="leaf-score" aria-label="Maximum score: ${score} leaves">${Array.from({ length: 4 }, (_, index) => `<span class="leaf ${index < score ? '' : 'spent'}">◆</span>`).join('')}<small>${score} leaves</small></div></div>
     <div class="field-rules" aria-label="The two field rules"><span><b>Rule 1</b> One specimen in each row</span><span><b>Rule 2</b> One specimen in each column</span></div>
     <div class="game-layout">
       <div class="quick-tray" role="group" aria-label="Quick specimen tray">${specimens.map(({ id }) => `<button type="button" class="quick-specimen ${gameState.selected === id ? 'selected' : ''} ${gameState.placements[id] ? 'placed' : ''}" data-quick-specimen="${id}" aria-pressed="${gameState.selected === id}" aria-label="${specimenName(id)}. ${gameState.placements[id] ? `Placed in ${cellName(gameState.placements[id]!)}.` : 'Not placed.'} Select specimen.">${icon(id)}<span>${specimenName(id)}</span></button>`).join('')}</div>
@@ -135,7 +137,7 @@ function infoPage(kind: 'privacy' | 'terms' | '404'): string {
     body: `<p>Riddle Grid stores your current layout, completed result, and sound choice in your browser.</p><h2>What leaves your device</h2><p>No puzzle choices or personal details leave your device. The site uses no analytics, ads, cookies, or third-party scripts.</p><h2>Remove local data</h2><p>Clear this site’s browser storage to remove saved progress and settings.</p>`,
   } : kind === 'terms' ? {
     title: 'Terms for playing Riddle Grid', pageTitle: 'Terms — Riddle Grid',
-    body: `<p>Riddle Grid is a free puzzle provided as-is. You may play it for personal use.</p><h2>Fair use</h2><p>Do not disrupt the site or present its puzzles and artwork as your own.</p><h2>Availability</h2><p>The daily puzzle may change or stop without notice. No purchase or account is involved.</p>`,
+    body: `<p>Riddle Grid is a puzzle provided as-is. You may play it for personal use.</p><h2>Fair use</h2><p>Do not disrupt the site or present its puzzles and artwork as your own.</p><h2>Availability</h2><p>The daily puzzle may change or stop without notice.</p>`,
   } : {
     title: 'This field sheet is missing', pageTitle: 'Page not found — Riddle Grid',
     body: `<p>The address does not match a Riddle Grid page.</p><a class="button primary" href="/" data-route>Return to today’s grid</a>`,
@@ -144,31 +146,51 @@ function infoPage(kind: 'privacy' | 'terms' | '404'): string {
   return `${header()}<main id="main" class="text-page"><div class="margin-sketch" aria-hidden="true">${specimenSvg('fern')}</div><p class="eyebrow">${kind === '404' ? '404 / page not found' : `Riddle Grid / ${kind}`}</p><h1 id="page-title" tabindex="-1">${content.title}</h1>${content.body}</main>${footer()}<div class="route-status sr-only" aria-live="polite"></div><div class="online-status" role="status" hidden></div>`;
 }
 
-function render(path = window.location.pathname): void {
-  demoMode = path === '/demo';
-  if (path === '/' || path === '/index.html') {
-    document.title = 'Riddle Grid — Solve a daily deduction grid';
-    app.innerHTML = landing();
-  } else if (path === '/demo') {
-    document.title = 'Demo — Riddle Grid';
-    app.innerHTML = demoPage();
-  } else if (path === '/privacy') app.innerHTML = infoPage('privacy');
-  else if (path === '/terms') app.innerHTML = infoPage('terms');
-  else app.innerHTML = infoPage('404');
-  const canonicalPath = ['/', '/demo', '/privacy', '/terms'].includes(path) ? path : '/404';
+function setMetadata(title: string, description: string, canonicalPath: string): void {
+  document.title = title;
+  document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', description);
+  document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', title);
+  document.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.setAttribute('content', description);
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.setAttribute('content', title);
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.setAttribute('content', description);
   document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', `https://riddle-grid.sociobot.in${canonicalPath}`);
+}
+
+function render(path = window.location.pathname, search = window.location.search): void {
+  demoMode = isDemoLocation(path, search);
+  if ((path === '/' || path === '/index.html') && !demoMode) {
+    setMetadata('Riddle Grid — Solve a daily deduction grid', 'Place four illustrated specimens in a daily 4×4 deduction grid.', '/');
+    app.innerHTML = landing();
+  } else if (demoMode) {
+    setMetadata('Demo — Riddle Grid', 'Play the complete Riddle Grid sample without changing daily progress.', '/demo');
+    app.innerHTML = demoPage();
+  } else if (path === '/privacy') {
+    setMetadata('Privacy — Riddle Grid', 'Read how Riddle Grid keeps puzzle progress in your browser.', '/privacy');
+    app.innerHTML = infoPage('privacy');
+  } else if (path === '/terms') {
+    setMetadata('Terms — Riddle Grid', 'Read the terms for playing Riddle Grid.', '/terms');
+    app.innerHTML = infoPage('terms');
+  } else {
+    setMetadata('Page not found — Riddle Grid', 'This Riddle Grid page could not be found.', '/404');
+    app.innerHTML = infoPage('404');
+  }
   bindEvents();
   updateOnlineStatus();
 }
 
-function navigate(path: string): void {
-  history.pushState({}, '', path);
-  render(path);
+function focusRouteHeading(): void {
   requestAnimationFrame(() => {
-    document.querySelector<HTMLElement>('h1')?.focus();
+    document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
     const live = document.querySelector<HTMLElement>('.route-status');
     if (live) live.textContent = document.title;
   });
+}
+
+function navigate(target: string): void {
+  const url = new URL(target, window.location.origin);
+  history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  render(url.pathname, url.search);
+  focusRouteHeading();
 }
 
 function announce(message: string): void {
@@ -196,7 +218,7 @@ function updateGame(focusSelector?: string): void {
   wrapper.innerHTML = gameMarkup(demoMode);
   old.replaceWith(wrapper.firstElementChild!);
   bindGameEvents();
-  if (focusSelector) requestAnimationFrame(() => document.querySelector<HTMLElement>(focusSelector)?.focus());
+  if (focusSelector) document.querySelector<HTMLElement>(focusSelector)?.focus();
 }
 
 function selectSpecimen(id: SpecimenId, focusSelector = `[data-specimen="${id}"]`): void {
@@ -272,7 +294,7 @@ function bindGameEvents(): void {
 }
 
 function bindEvents(): void {
-  document.querySelectorAll<HTMLAnchorElement>('a[data-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); navigate(new URL(link.href).pathname); }));
+  document.querySelectorAll<HTMLAnchorElement>('a[data-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); const url = new URL(link.href); navigate(`${url.pathname}${url.search}${url.hash}`); }));
   document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', () => { localStorage.removeItem('demo:riddle-grid:sample'); gameState = blankState(); render('/demo'); document.querySelector<HTMLElement>('#page-title')?.focus(); });
   document.querySelector('[data-action="start-real"]')?.addEventListener('click', () => { localStorage.removeItem('demo:riddle-grid:sample'); navigate('/'); });
   document.querySelector('[data-action="toggle-sound"]')?.addEventListener('click', (event) => { const button = event.currentTarget as HTMLButtonElement; const next = button.getAttribute('aria-pressed') !== 'true'; localStorage.setItem('riddle-grid:muted', String(next)); button.setAttribute('aria-pressed', String(next)); button.textContent = next ? 'Sound off' : 'Sound on'; });
@@ -286,7 +308,7 @@ function updateOnlineStatus(): void {
   status.textContent = navigator.onLine ? '' : 'You are offline. The open puzzle still works.';
 }
 
-window.addEventListener('popstate', () => render());
+window.addEventListener('popstate', () => { render(); focusRouteHeading(); });
 window.addEventListener('offline', updateOnlineStatus);
 window.addEventListener('online', updateOnlineStatus);
 render(window.location.pathname === '/404.html' ? '/404' : window.location.pathname);

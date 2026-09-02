@@ -44,11 +44,30 @@ test('@claim:offline-reload game reloads offline after the first visit', async (
 });
 
 test('@claim:sample-complete sample reaches the solved result', async ({ page }) => {
-  await page.goto('/demo');
+  await page.goto('/?demo=1');
   await expect(page.getByRole('heading', { name: 'Solve the sample deduction grid' })).toBeVisible();
   await solveSample(page);
   await expect(page.getByRole('heading', { name: 'You found the only layout' })).toBeVisible();
   await expect(page.getByText('Score: 4 of 4 leaves.')).toBeVisible();
+});
+
+test('@claim:demo-isolation sample query route is isolated and resettable', async ({ page }) => {
+  await page.goto('/');
+  const dailyKey = await page.evaluate(() => {
+    const key = `riddle-grid:daily:${new Date().toISOString().slice(0, 10)}`;
+    localStorage.setItem(key, JSON.stringify({ placements: { fern: { row: 0, col: 0 } } }));
+    return key;
+  });
+  const dailyBefore = await page.evaluate((key) => localStorage.getItem(key), dailyKey);
+  await page.goto('/?demo=1');
+  await expect(page.getByLabel('Demo mode')).toBeVisible();
+  await page.locator('[data-specimen="fern"]').click();
+  await page.locator('[data-cell="2"]').click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'))).not.toBeNull();
+  expect(await page.evaluate((key) => localStorage.getItem(key), dailyKey)).toBe(dailyBefore);
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  expect(await page.evaluate(() => localStorage.getItem('demo:riddle-grid:sample'))).toBeNull();
+  expect(await page.evaluate((key) => localStorage.getItem(key), dailyKey)).toBe(dailyBefore);
 });
 
 test('@claim:restart-reset restarting the sample clears its layout', async ({ page }) => {
@@ -92,7 +111,7 @@ test('@claim:local-progress progress stays in this browser', async ({ page }) =>
 });
 
 test('@claim:keyboard-controls grid works with keyboard controls', async ({ page }) => {
-  await page.goto('/demo');
+  await page.goto('/?demo=1');
   await page.locator('[data-specimen="fern"]').focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-cell="0"]').focus();
@@ -141,6 +160,28 @@ test('@claim:no-third-party demo sends requests only to this site', async ({ pag
   expect([...origins]).toEqual(['http://127.0.0.1:4173']);
 });
 
+test('@claim:free-to-play complete sample play has no payment path', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('Free to play.', { exact: true })).toBeVisible();
+  await page.goto('/?demo=1');
+  await solveSample(page);
+  await expect(page.getByRole('heading', { name: 'You found the only layout' })).toBeVisible();
+  await expect(page.locator('form')).toHaveCount(0);
+  await expect(page.locator('button, a').filter({ hasText: /pay|purchase|subscribe|checkout|billing/i })).toHaveCount(0);
+});
+
+test('@claim:private-static-game demo has no cookies, tracking, ads, or external scripts', async ({ page }) => {
+  const origins = new Set<string>();
+  page.on('request', (request) => origins.add(new URL(request.url()).origin));
+  await page.goto('/?demo=1');
+  await solveSample(page);
+  expect(await page.evaluate(() => document.cookie)).toBe('');
+  expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+  expect(await page.locator('script[src]').evaluateAll((scripts) => scripts.every((script) => new URL((script as HTMLScriptElement).src).origin === location.origin))).toBe(true);
+  await expect(page.locator('iframe, form, [data-analytics], [data-ad], [class*="ad-" i], [id*="ad-" i]')).toHaveCount(0);
+  await expect(page.locator('button, a, input, textarea').filter({ hasText: /sign in|log in|chat|submit clue|send clue/i })).toHaveCount(0);
+});
+
 test('routes, metadata, and accessibility have no serious violations', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
@@ -154,6 +195,41 @@ test('routes, metadata, and accessibility have no serious violations', async ({ 
     expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
   }
   expect(consoleErrors).toEqual([]);
+});
+
+test('routes set plain titles, descriptions, and canonical URLs', async ({ page }) => {
+  const expected = [
+    ['/', 'Riddle Grid — Solve a daily deduction grid', 'https://riddle-grid.sociobot.in/'],
+    ['/?demo=1', 'Demo — Riddle Grid', 'https://riddle-grid.sociobot.in/demo'],
+    ['/privacy', 'Privacy — Riddle Grid', 'https://riddle-grid.sociobot.in/privacy'],
+    ['/terms', 'Terms — Riddle Grid', 'https://riddle-grid.sociobot.in/terms'],
+    ['/missing-page', 'Page not found — Riddle Grid', 'https://riddle-grid.sociobot.in/404'],
+  ] as const;
+  for (const [path, title, canonical] of expected) {
+    await page.goto(path);
+    await expect(page).toHaveTitle(title);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Riddle Grid|deduction grid|terms/i);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical);
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', title);
+  }
+});
+
+test('Back and Forward focus and announce the new route heading', async ({ page }) => {
+  await page.goto('/?demo=1');
+  await page.locator('.site-header a[href="/privacy"]').click();
+  await expect(page.getByRole('heading', { name: 'Privacy without an account' })).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Solve the sample deduction grid' })).toBeFocused();
+  await expect(page.locator('.route-status')).toHaveText('Demo — Riddle Grid');
+  await page.goForward();
+  await expect(page.getByRole('heading', { name: 'Privacy without an account' })).toBeFocused();
+  await expect(page.locator('.route-status')).toHaveText('Privacy — Riddle Grid');
+});
+
+test('404 document carries complete product metadata', async () => {
+  const { readFileSync } = await import('node:fs');
+  const html = readFileSync(new URL('../404.html', import.meta.url), 'utf8');
+  for (const required of ['apple-touch-icon', 'og:title', 'og:description', 'og:image', 'twitter:card', 'twitter:title', 'twitter:description']) expect(html).toContain(required);
 });
 
 test('mobile layout has no horizontal page overflow', async ({ browser }) => {

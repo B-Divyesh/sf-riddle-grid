@@ -1,6 +1,6 @@
 # Riddle Grid
 
-Solve a four-specimen daily deduction grid. Riddle Grid is for coffee-break players who want logic without spelling or obscure vocabulary. A round is designed for a 3–5 minute break.
+Solve a four-specimen daily deduction grid. Riddle Grid is for coffee-break players who want logic without spelling or obscure vocabulary.
 
 The game selects one shared puzzle for each UTC date. All 20 daily layouts have exactly one solution. The bundled sample reaches the same complete solve and explanation flow.
 
@@ -26,7 +26,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173/demo` for the fixed verification sandbox. Demo progress uses `demo:riddle-grid:sample`; daily progress uses `riddle-grid:daily:<UTC date>`.
+Open `http://localhost:5173/?demo=1` for the fixed verification sandbox. The `/demo` route also opens the sample. Demo progress uses `demo:riddle-grid:sample`; daily progress uses `riddle-grid:daily:<UTC date>`.
 
 ## Test and build
 

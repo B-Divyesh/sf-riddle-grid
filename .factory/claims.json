@@ -21,6 +21,13 @@
     "sandbox": "fresh browser context at /demo; place the shipped sample solution; assert the solved result and score"
   },
   {
+    "id": "demo-isolation",
+    "claim": "The sample opens at ?demo=1 and saves separately from daily progress.",
+    "where": "landing action, demo banner, README, and demo guide",
+    "test": "npm test -- --grep @claim:demo-isolation",
+    "sandbox": "fresh browser context; seed a daily layout, open /?demo=1, place a sample specimen, assert the banner and separate demo storage key, then reset only the demo key"
+  },
+  {
     "id": "restart-reset",
     "claim": "Restart sample clears the sample layout.",
     "where": "demo result action",
@@ -68,6 +75,20 @@
     "where": "README and handoff",
     "test": "npm test -- --grep @claim:phone-60fps",
     "sandbox": "fresh Chromium context at 390x844 with device scale factor 2 and 4x CPU throttling; measure three one-second requestAnimationFrame samples; assert the median is 55-65 fps"
+  },
+  {
+    "id": "free-to-play",
+    "claim": "The complete game is playable without payment.",
+    "where": "landing facts",
+    "test": "npm test -- --grep @claim:free-to-play",
+    "sandbox": "fresh browser context at /?demo=1; solve the shipped sample and assert the end screen appears with no payment, purchase, or subscription controls"
+  },
+  {
+    "id": "private-static-game",
+    "claim": "The site uses no analytics, ads, cookies, or third-party scripts.",
+    "where": "privacy page",
+    "test": "npm test -- --grep @claim:private-static-game",
+    "sandbox": "fresh browser context at /?demo=1; record requests through a full sample run, assert an empty document.cookie value, only same-origin requests, and no analytics, advertising, sign-in, chat, or submission controls/scripts"
   },
   {
     "id": "no-third-party",

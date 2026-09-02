@@ -1,6 +1,6 @@
 # Landing-page copy audit
 
-Checked 2026-09-01. Word counts treat contractions and hyphenated terms as one word. Labels and fragments are included for completeness. No line exceeds 22 words. No line uses a banned word.
+Checked 2026-09-02. Word counts treat contractions and hyphenated terms as one word. Labels and fragments are included for completeness. No line exceeds 22 words. No line uses a banned word.
 
 | Copy | Words | Result |
 | --- | ---: | --- |
@@ -8,7 +8,7 @@ Checked 2026-09-01. Word counts treat contractions and hyphenated terms as one w
 | For coffee-break players who want logic without spelling tests. | 9 | Pass |
 | Try it with sample data | 5 | Pass |
 | Opens a ready sample. | 4 | Pass |
-| Free to play. | 3 | Pass |
+| Free to play. | 3 | Covered by `free-to-play` |
 | Offline after one visit. | 4 | Pass |
 | Saved in this browser. | 4 | Pass |
 | Today’s clues belong on one field grid. | 7 | Pass |
@@ -19,11 +19,10 @@ Checked 2026-09-01. Word counts treat contractions and hyphenated terms as one w
 | Check the layout. | 3 | Pass |
 | See the solved grid and its explanation. | 7 | Pass |
 | The game stays on your device | 6 | Pass |
-| Riddle Grid has no account, ads, chat, or user-made clues. | 10 | Pass |
 | Your layout and sound setting use browser storage. | 8 | Pass |
 | The game sends no personal data. | 6 | Pass |
 | Read the privacy details | 4 | Pass |
-| Riddle Grid is a free daily deduction game. | 8 | Pass |
+| Riddle Grid is a daily deduction game. | 7 | Pass |
 | One specimen in each row | 5 | Pass |
 | One specimen in each column | 5 | Pass |
 | No hints revealed. | 3 | Pass |

@@ -51,7 +51,7 @@ h3 { font-size: 1.32rem; }
 .demo-banner button { color: var(--paper); border-color: #a8b8ad; }
 
 main { overflow: hidden; }
-.hero { display: grid; grid-template-columns: minmax(380px, .9fr) minmax(430px, 1.1fr); align-items: center; gap: clamp(32px, 5vw, 72px); max-width: 1320px; margin: 0 auto; padding: 20px clamp(20px, 5vw, 72px) 10px; position: relative; }
+.hero { display: grid; grid-template-columns: minmax(380px, .9fr) minmax(430px, 1.1fr); align-items: center; gap: clamp(32px, 5vw, 72px); max-width: 1320px; margin: 0 auto; padding: 20px clamp(20px, 5vw, 72px) 0; position: relative; }
 .hero::before { content: ""; position: absolute; left: clamp(20px, 3vw, 52px); top: 10%; bottom: 10%; border-left: 1px solid color-mix(in srgb, var(--berry), transparent 62%); }
 .hero-copy { position: relative; z-index: 1; padding-left: clamp(8px, 3vw, 40px); }
 .hero h1 { max-width: 14ch; font-size: clamp(2.8rem, 3.7vw, 3.5rem); }
