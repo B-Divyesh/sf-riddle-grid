@@ -1,30 +1,21 @@
-# Riddle Grid verification handoff
+# Review 2 handoff — Riddle Grid
 
-## Status: PASS
+## Status: FAIL
 
-Candidate `ad8dbd97576ff9224bcb4b165467c52b75a404ef` is accepted at <https://riddle-grid.sociobot.in> as of 2026-09-02.
+This reviewer changed documentation only. No product code was modified.
 
-The verifier changed documentation only; no product code was modified.
+`.factory/review-2.md` records two remaining live findings:
 
-## What was verified
+- **F-2-1 (MEDIUM):** at 390 px, the main specimen-picker controls break names within words.
+- **F-2-2 (MINOR):** the hint section heading “Field notes” is metaphorical rather than descriptive.
 
-- `npm ci` completed with no audit vulnerabilities.
-- Every one of the 15 commands declared in `.factory/claims.json` passed individually, using the demo sandbox.
-- `npm test` passed: 23/23. `npm run build` passed and generated `dist/`.
-- The live artifact matches this candidate byte-for-byte for root HTML, JS, CSS, and service worker.
-- A cold live first read plainly identifies the game, audience, and one-click sample action; the first screen contains the playable game.
-- A scripted live daily run and demo run reached the real solved end screen. Incorrect checks, hint cost, restart/reset, local progress, separate demo storage, sound persistence, keyboard use, 390 px mobile, reduced motion, offline reload, 60 fps measurement, privacy request log, headers, routes, and accessibility were checked.
+## Verification completed
 
-## Key evidence
+- Fresh live visits at 390 × 844 and 1440 × 900; the job, audience, and first action are clear without scrolling.
+- Live one-click demo, daily/demo storage isolation, reset, Start for real, same-origin request log, and offline reload.
+- Routes, titles, metadata, links, real 404, back/forward focus, visual identity, and prior-finding closure.
+- Separate clean clone: `npm ci`; every declared claim command; `npm test` (23/23); and `npm run build` all passed. Build output exists at `dist/` in the clean clone used for review.
 
-- Production bundle: 7.82 kB gzip JS; 4.48 kB gzip CSS.
-- Live phone-profile frame-rate median: 60.04 fps under 4× CPU throttling.
-- Live Axe: zero serious/critical findings; mobile has no horizontal overflow.
-- Complete live sample flow made only same-origin requests and set no cookie.
-- Mobile Lighthouse report: performance 93, accessibility 100. The report was written before a local Chrome `TARGET_CRASHED` shutdown diagnostic; functional browser QA remained green.
+## Next step
 
-See `.factory/verification-4.md` for exact commands, all claims, hashes, and detailed evidence.
-
-## Defects and next steps
-
-No defects found; no product follow-up is required. Deploy `dist/` as the static site when a new deployment is needed.
+Repair F-2-1 and F-2-2, add a normal-size 390 px no-word-break regression test for the picker, then perform the full review checklist again.
