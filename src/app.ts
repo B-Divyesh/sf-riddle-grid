@@ -307,7 +307,7 @@ function bindGameEvents(): void {
   document.querySelectorAll<HTMLElement>('[data-specimen]').forEach((button) => button.addEventListener('click', () => selectSpecimen(button.dataset.specimen as SpecimenId)));
   document.querySelectorAll<HTMLElement>('[data-quick-specimen]').forEach((button) => button.addEventListener('click', () => selectSpecimen(button.dataset.quickSpecimen as SpecimenId, `[data-quick-specimen="${button.dataset.quickSpecimen}"]`)));
   document.querySelectorAll<HTMLButtonElement>('[data-cell]').forEach((button) => {
-    button.addEventListener('click', (event) => { if (event.detail !== 0) chooseCell(Number(button.dataset.cell)); });
+    button.addEventListener('click', () => chooseCell(Number(button.dataset.cell)));
     button.addEventListener('keydown', (event) => {
       const index = Number(button.dataset.cell);
       const row = Math.floor(index / 4); const col = index % 4;

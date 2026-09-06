@@ -63,6 +63,15 @@ async function solveSample(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Check layout' }).click();
 }
 
+async function tap(page: import('@playwright/test').Page, selector: string): Promise<void> {
+  const target = page.locator(selector);
+  await expect(target).toBeVisible();
+  await target.scrollIntoViewIfNeeded();
+  const box = await target.boundingBox();
+  if (!box) throw new Error(`Touch target was not rendered: ${selector}`);
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+}
+
 test('@claim:unique-solutions all authored puzzles have one solution', () => {
   expect(puzzles).toHaveLength(20);
   expect(validatePuzzles()).toEqual([]);
@@ -208,8 +217,9 @@ test('@claim:local-progress progress stays in this browser', async ({ page }) =>
   await expect(page.locator('[data-cell="2"]')).toHaveAttribute('aria-label', /Fern/);
 });
 
-test('@claim:keyboard-controls grid works with keyboard controls', async ({ page }) => {
+test('@claim:keyboard-controls Enter, Space, arrows, and Escape complete their keyboard actions', async ({ page }) => {
   await page.goto('/?demo=1');
+
   await page.locator('[data-specimen="fern"]').focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-cell="0"]').focus();
@@ -217,6 +227,47 @@ test('@claim:keyboard-controls grid works with keyboard controls', async ({ page
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-cell="2"]')).toHaveAttribute('aria-label', /Fern/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-cell="2"]')).toHaveAttribute('aria-label', 'Row 1, column 3, empty');
+  await expect(page.locator('[data-specimen="fern"]')).toHaveAttribute('aria-label', /Not placed/);
+  await expect(page.locator('#game-message')).toHaveText('Fern returned to the clue cards.');
+
+  await page.locator('[data-specimen="acorn"]').focus();
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-specimen="acorn"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('[data-cell="13"]').focus();
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-cell="13"]')).toHaveAttribute('aria-label', /Acorn/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-cell="13"]')).toHaveAttribute('aria-label', 'Row 4, column 2, empty');
+  await expect(page.locator('[data-specimen="acorn"]')).toHaveAttribute('aria-label', /Not placed/);
+  await expect(page.locator('#game-message')).toHaveText('Acorn returned to the clue cards.');
+});
+
+test('@claim:pointer-touch-controls pointer and touch both select and place a specimen', async ({ page, browser }) => {
+  await page.goto('/demo');
+  await page.locator('[data-specimen="fern"]').click();
+  await expect(page.locator('[data-specimen="fern"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('[data-cell="2"]').click();
+  await expect(page.locator('[data-cell="2"]')).toHaveAttribute('aria-label', /Fern/);
+
+  const touchContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+  });
+  try {
+    const touchPage = await touchContext.newPage();
+    await touchPage.goto('http://127.0.0.1:4173/demo');
+    await tap(touchPage, '[data-quick-specimen="fern"]');
+    await expect(touchPage.locator('[data-quick-specimen="fern"]')).toHaveAttribute('aria-pressed', 'true');
+    await tap(touchPage, '[data-cell="2"]');
+    await expect(touchPage.locator('[data-cell="2"]')).toHaveAttribute('aria-label', /Fern/);
+    await expect(touchPage.locator('[data-quick-specimen="fern"]')).toHaveAttribute('aria-label', /Placed in row 1, column 3/);
+  } finally {
+    await touchContext.close();
+  }
 });
 
 test('keyboard completion moves focus to the focusable result heading', async ({ page }) => {

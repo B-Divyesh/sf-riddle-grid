@@ -76,6 +76,8 @@ The first screen can be read in one breath: solve one short deduction grid; it i
 
 The README now says, “The sample lets you solve the grid or view its explanation.” It replaces the vague “bundled sample” and “flow” wording. Its privacy copy says puzzle choices stay in this browser and no files load from other websites. All README sentences remain at or below 22 words. Quantitative and capability statements map to `.factory/claims.json`.
 
+The README's pointer/touch instruction is covered by `pointer-touch-controls`. Its Enter, Space, arrow, and Escape instructions are covered by `keyboard-controls`.
+
 ## Terminology
 
 | Concept | One term |
