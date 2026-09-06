@@ -1,39 +1,52 @@
-# Riddle Grid review 9 handoff
+# Riddle Grid repair 4 handoff
 
 ## Status
 
-**FAIL.** Review 9 found **1 high finding** and **3 untested public claims**. The shipped controls work, but the automated claim coverage does not test the README's advertised touch, Space, or Escape behavior.
+**PASS.** The review-9 control-coverage finding is resolved. The product remains a free, local-first daily 4×4 deduction game for coffee-break players who want logic without spelling tests.
 
-Implementation reviewed: `1db89f65321e9b71fbb4c2fdab06156eb62cf19b`. Documentation baseline: `51d877e8c3044528beee52f4305aefb7a06e4324`. Fresh build artifacts match the live release. No product code was changed.
+- Implementation SHA: `c52e03162f7dd893bfd83f3fcdba7970064d850d`
+- Documentation baseline: `c52e03162f7dd893bfd83f3fcdba7970064d850d`
+- Handoff updates after that implementation are report-only and do not change the deployed runtime.
 
-## What was verified
+## What changed
 
-- All 17 declared claim commands passed independently; `npm test` passed 32/32 and `npm run build` produced `dist/`.
-- Fresh desktop keyboard play reached the win screen. Fresh phone touch play reached the explanation screen after three invalid checks.
-- Restart, hint boundaries, reload recovery, sound persistence, demo reset/exit isolation, offline reload, reduced motion, and privacy requests passed.
-- Live Axe scans found zero violations across root, demo, legal pages, and the designed 404 at desktop and phone sizes.
-- Fresh live phone frame samples under 4× CPU throttling had a 60.04 fps median.
+- Added the `pointer-touch-controls` claim. Its outcome test uses a desktop pointer and a 390×844 `hasTouch` phone context with low-level touchscreen taps. Both must select a specimen and place it in a cell.
+- Expanded `keyboard-controls` to prove Enter, arrows, Space, and Escape. It asserts grid placement, returned clue-card state, and the recovery message.
+- Removed the grid cell click-count filter. It incorrectly rejected a valid zero-count touch click in the automated phone path. Keyboard handlers still prevent their default click before applying their own action.
+- Updated the copy audit to map the README's pointer/touch and keyboard instructions to their declared claims.
+- Kept the catalog description verb-first and copied the 72-character value to `/work/.evidence/catalog-description.txt`.
 
-## Finding to fix
+## Verification
 
-Add automated claim coverage for the three advertised controls:
+Clean checkout: `/tmp/riddle-grid-claims.M9HWgi` at the implementation SHA, with Node 22.23.2 and npm 10.9.8.
 
-1. Touch selects a specimen and a cell.
-2. Space selects and places a specimen.
-3. Escape returns a placed specimen to the clue cards.
+- `npm ci` passed with 0 vulnerabilities.
+- All 18 exact commands in `.factory/claims.json` passed independently.
+- `npx playwright test --list --grep '@claim:'` listed 18 claim tests, matching the manifest.
+- `npm test` passed 33/33 tests.
+- `npm run build` passed and produced `dist/`.
+- Production output: JavaScript 21.73 kB raw / 7.99 kB gzip; CSS 16.54 kB raw / 4.56 kB gzip.
+- The suite's Playwright Axe checks cover root, demo, legal pages, and 404 with no violations. The fresh live phone and desktop root scans also found zero violations.
 
-The existing `keyboard-controls` test covers Enter and arrows only. No test uses `touchscreen`, `hasTouch`, `Space`, or `Escape`. Add a declared touch-control claim and expand the keyboard claim, or remove the unsupported public wording.
+## Deployment and live checks
 
-## Run and verify
+Deployed the built `dist/` to the existing `sf-riddle-grid` static app. HTTPS returned 200 after deployment. Live `index.html`, `404.html`, JavaScript, and CSS SHA-256 values match the local build. The expected missing route remains a designed HTTP 404.
 
-```sh
-npm ci
-npm test
-npm run build
-```
+`verify-url.sh` passed on the live root, demo, Privacy, and Terms pages: each has its expected title, `lang="en"`, one h1, main landmark, image alternatives, labelled buttons, and no console or page errors.
 
-Run every exact command in `.factory/claims.json` separately after the repair. The full evidence and disposition table are in [review-9.md](review-9.md). Live screenshots and structured browser results are under `/work/.evidence/review-9/`.
+Fresh live evidence is in `/work/.evidence/riddle-grid-repair-4/`.
 
-## Evidence note
+- Desktop 1440×900 and phone 390×844 both stated the job, audience, and first action before scrolling: **Solve one short deduction grid**; **For coffee-break players who want logic without spelling tests**; **Try it with sample data — Opens a ready sample.** A specimen control and full first grid cell were visible in both.
+- Desktop demo: Space placed Fern, Escape returned it to the clue cards, then three invalid checks reached **Here is the only layout**.
+- Phone demo: touchscreen taps placed the four correct specimens and reached **You found the only layout**. Restart cleared the grid. Reset and Start for real preserved seeded daily progress and sound while removing demo keys.
+- Live frame samples at 390×844, DPR2, 4× CPU throttling were 61.58, 60.03, and 59.98 fps; median 60.03 fps.
 
-The work order's authoritative path `/work/factory-evidence/riddle-grid-verify-10/qa-report.md` was not mounted in this worker. The complete repository copy `.factory/verification-10.md` was read, and all relevant checks were repeated independently.
+## Earlier finding disposition
+
+All findings recorded before review 9 remain fixed under the current clean suite and fresh live checks: first-screen game visibility, frame-rate coverage, cache and real-404 behavior, focus contrast, 44px targets, 200% text reflow, deterministic keyboard placement, claim coverage for free/privacy/account wording, plain headings and labels, route-history focus, 404 metadata, phone navigation and specimen labels, singular score/check grammar, valid landmarks, demo storage isolation, result focus, and sample naming.
+
+Review-9 F-9-1 is now fixed: touch, Space, and Escape each have repeatable declared-claim coverage. The pointer/touch claim also proves the README's pointer wording.
+
+## Known gaps and next steps
+
+No product gaps remain within the brief. The game has no backend, payments, account system, or multiplayer feature, so backend persistence, tenant, health, and rate-limit checks do not apply. Repeat the 18 claim commands, full suite, build, and fresh phone touch run whenever controls or service-worker behavior change.
