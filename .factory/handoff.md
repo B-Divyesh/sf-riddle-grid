@@ -1,19 +1,19 @@
-# Riddle Grid review 6 handoff
+# Riddle Grid review 7 handoff
 
 ## Status
 
-**PASS.** This was an independent adversarial review of commit `023c15e775ac9dfb710eb5993529a28bc9c0a1b1` and the live site at <https://riddle-grid.sociobot.in>. No product code or deployment configuration was changed.
+**PASS.** Strict fresh review of live <https://riddle-grid.sociobot.in> found **0 findings** and **0 untested claims**. The reviewed implementation is `1db89f65321e9b71fbb4c2fdab06156eb62cf19b`; documentation checkout is `217082d4820777894eca7f37ed47d7dc28b919b0`. No product code or deployment configuration was changed.
 
-## What was done
+## What was verified
 
-- Performed fresh 390 × 844 and 1440 × 900 cold visits before scrolling.
-- Entered the demo from the landing action, solved it, reset it, and verified live demo-storage isolation, no game-time requests, and no cookies.
-- Confirmed live offline reload after service-worker activation.
-- Ran every exact claim command from a clean clone, then full tests and build.
-- Checked live routes, metadata, HTTP 404, headers, links, history focus/announcements, and Axe on root, demo, Privacy, Terms, and 404.
-- Rechecked every prior review/polish finding against the live behavior and current source/test coverage.
+- Fresh 390 × 844 phone and 1440 × 900 desktop first reads showed the job, audience, action, and playable grid before scrolling.
+- The live one-click sample was played to the win and three-check explanation endings; restart, reset, invalid-input recovery, pointer/touch, keyboard, hint, and Escape flows worked.
+- Demo state remained isolated from seeded daily state; gameplay generated no requests and no cookies.
+- Every one of 17 declared claims passed independently from a clean checkout. Full `npm test` passed 32/32; `npm run build` passed and created `dist/`.
+- Live routes, legal pages, links, HTTP 404, accessibility, reduced motion, Back/Forward focus, privacy, service-worker offline reload, and frame-rate claim passed.
+- Fresh built `index.html`, 404, JS, CSS, and service worker hashes exactly match live output.
 
-## Verification
+## Run and verify
 
 ```sh
 npm ci
@@ -21,8 +21,8 @@ npm test
 npm run build
 ```
 
-In clean clone `/tmp/riddle-grid-review6-clean.r0N8z7`, all 17 declared claim commands passed independently; `npm test` passed 32/32 in 42.1 seconds; `npm run build` passed and created `dist/`. The full audit and sentence-level copy counts are in [review-6.md](review-6.md).
+The detailed record is [review-7.md](review-7.md). It includes all claim results, live run evidence, and the current disposition of every earlier finding.
 
 ## Known gaps and next steps
 
-None found. The only committed changes are this review record and this handoff update.
+None. Only review evidence and report files were added.
