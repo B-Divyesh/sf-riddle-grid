@@ -1,16 +1,28 @@
-# Riddle Grid verification 10 handoff
+# Riddle Grid review 9 handoff
 
 ## Status
 
-**PASS.** Verification found **0 findings** and **0 untested public claims**. The reviewed implementation is `1db89f65321e9b71fbb4c2fdab06156eb62cf19b`; the documentation baseline is `dd8c03ef81ca26d48859a520b3b2e2196750ff8b`. Fresh build artifacts match the live release. No product code was changed.
+**FAIL.** Review 9 found **1 high finding** and **3 untested public claims**. The shipped controls work, but the automated claim coverage does not test the README's advertised touch, Space, or Escape behavior.
+
+Implementation reviewed: `1db89f65321e9b71fbb4c2fdab06156eb62cf19b`. Documentation baseline: `51d877e8c3044528beee52f4305aefb7a06e4324`. Fresh build artifacts match the live release. No product code was changed.
 
 ## What was verified
 
-- Every one of 17 declared claim commands passed independently; `npm test` passed 32/32 and `npm run build` produced `dist/`.
-- Chromium 145.0.7632.6, Firefox 146.0.1, and WebKit 26.0 each completed desktop keyboard and phone touch runs through the explanation and win endings.
-- Save/reload, restart, reset, demo/daily isolation, sound-setting persistence, reduced motion, privacy, legal routes, designed 404, links, and cross-engine Axe scans passed.
-- Complete live play made no request and set no cookie. Live HTML, JavaScript, CSS, 404, and service worker match the fresh build.
-- Fresh 4× CPU-throttled phone samples measured 61.45, 59.99, and 60.02 fps; median 60.02 fps.
+- All 17 declared claim commands passed independently; `npm test` passed 32/32 and `npm run build` produced `dist/`.
+- Fresh desktop keyboard play reached the win screen. Fresh phone touch play reached the explanation screen after three invalid checks.
+- Restart, hint boundaries, reload recovery, sound persistence, demo reset/exit isolation, offline reload, reduced motion, and privacy requests passed.
+- Live Axe scans found zero violations across root, demo, legal pages, and the designed 404 at desktop and phone sizes.
+- Fresh live phone frame samples under 4× CPU throttling had a 60.04 fps median.
+
+## Finding to fix
+
+Add automated claim coverage for the three advertised controls:
+
+1. Touch selects a specimen and a cell.
+2. Space selects and places a specimen.
+3. Escape returns a placed specimen to the clue cards.
+
+The existing `keyboard-controls` test covers Enter and arrows only. No test uses `touchscreen`, `hasTouch`, `Space`, or `Escape`. Add a declared touch-control claim and expand the keyboard claim, or remove the unsupported public wording.
 
 ## Run and verify
 
@@ -20,13 +32,8 @@ npm test
 npm run build
 ```
 
-The full record is [verification-10.md](verification-10.md). End-screen and cold-screen captures are under `/work/.evidence/screenshots/`.
+Run every exact command in `.factory/claims.json` separately after the repair. The full evidence and disposition table are in [review-9.md](review-9.md). Live screenshots and structured browser results are under `/work/.evidence/review-9/`.
 
-## Infrastructure notes
+## Evidence note
 
-- Playwright WebKit 26.0 cannot reload a service-worker page after `context.setOffline(true)` in this worker; a separate minimal service-worker fixture reproduces the same internal error. Chromium and Firefox completed live offline reloads, and WebKit populated the complete live offline cache.
-- Headless Firefox has no running audio output even for an independent explicit-resume fixture. The game invoked Web Audio after a gesture in all engines, and sound-setting persistence passed in all engines.
-
-## Known gaps and next steps
-
-No product gap is known. A future physical Safari/Firefox device pass could confirm audible output and Safari offline reload outside headless worker limitations.
+The work order's authoritative path `/work/factory-evidence/riddle-grid-verify-10/qa-report.md` was not mounted in this worker. The complete repository copy `.factory/verification-10.md` was read, and all relevant checks were repeated independently.
