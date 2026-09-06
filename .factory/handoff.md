@@ -1,17 +1,16 @@
-# Riddle Grid review 8 handoff
+# Riddle Grid verification 10 handoff
 
 ## Status
 
-**PASS.** Strict fresh review of live <https://riddle-grid.sociobot.in> found **0 findings** and **0 untested claims**. The reviewed implementation is `1db89f65321e9b71fbb4c2fdab06156eb62cf19b`; documentation checkout is `ed6045e928cb148b67f0744d1e9f28f1e080de1f`. No product code or deployment configuration was changed.
+**PASS.** Verification found **0 findings** and **0 untested public claims**. The reviewed implementation is `1db89f65321e9b71fbb4c2fdab06156eb62cf19b`; the documentation baseline is `dd8c03ef81ca26d48859a520b3b2e2196750ff8b`. Fresh build artifacts match the live release. No product code was changed.
 
 ## What was verified
 
-- Fresh 390 × 844 phone and 1440 × 900 desktop first reads showed the job, audience, action, and playable grid before scrolling.
-- The live one-click sample was played to the win and three-check explanation endings; restart, reset, invalid-input recovery, pointer/touch, keyboard, hint, and Escape flows worked.
-- Demo state remained isolated from seeded daily state; gameplay generated no requests and no cookies.
-- Every one of 17 declared claims passed independently from a clean checkout. Full `npm test` passed 32/32 in 41.3 seconds; `npm run build` passed and created `dist/`.
-- Live routes, legal pages, links, HTTP 404, accessibility, reduced motion, Back/Forward focus, privacy, service-worker offline reload, and frame-rate claim passed.
-- Fresh built `index.html`, JS, CSS, and service worker hashes exactly match live output.
+- Every one of 17 declared claim commands passed independently; `npm test` passed 32/32 and `npm run build` produced `dist/`.
+- Chromium 145.0.7632.6, Firefox 146.0.1, and WebKit 26.0 each completed desktop keyboard and phone touch runs through the explanation and win endings.
+- Save/reload, restart, reset, demo/daily isolation, sound-setting persistence, reduced motion, privacy, legal routes, designed 404, links, and cross-engine Axe scans passed.
+- Complete live play made no request and set no cookie. Live HTML, JavaScript, CSS, 404, and service worker match the fresh build.
+- Fresh 4× CPU-throttled phone samples measured 61.45, 59.99, and 60.02 fps; median 60.02 fps.
 
 ## Run and verify
 
@@ -21,8 +20,13 @@ npm test
 npm run build
 ```
 
-The detailed record is [review-8.md](review-8.md). It includes all claim results, live run evidence, and the current disposition of every earlier finding.
+The full record is [verification-10.md](verification-10.md). End-screen and cold-screen captures are under `/work/.evidence/screenshots/`.
+
+## Infrastructure notes
+
+- Playwright WebKit 26.0 cannot reload a service-worker page after `context.setOffline(true)` in this worker; a separate minimal service-worker fixture reproduces the same internal error. Chromium and Firefox completed live offline reloads, and WebKit populated the complete live offline cache.
+- Headless Firefox has no running audio output even for an independent explicit-resume fixture. The game invoked Web Audio after a gesture in all engines, and sound-setting persistence passed in all engines.
 
 ## Known gaps and next steps
 
-None. Only review evidence and report files were added.
+No product gap is known. A future physical Safari/Firefox device pass could confirm audible output and Safari offline reload outside headless worker limitations.
